@@ -1,0 +1,13 @@
+# Virtuelle Umgebung
+venv/
+
+# Python Cache-Dateien
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Lokale Konfigurationsdateien
+.env
+
+# Andere Dateien, die nicht ins Repository gehören
+*.log

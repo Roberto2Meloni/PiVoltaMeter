@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PiVoltMeter</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <h1>PiVoltMeter</h1>
+        <p class="subtitle">LED-Steuerung für Raspberry Pi</p>
+    </header>
+    
+    <div class="container">
+        <div class="card">
+            <h2>LED-Start-Sequenzen</h2>
+            <div class="button-container">
+                <button onclick="runSequence('sequence_one')">Sequenz 1</button>
+                <button onclick="runSequence('sequence_two')">Sequenz 2</button>
+                <button onclick="runSequence('sequence_three')">Sequenz 3</button>
+                <button onclick="runSequence('run_all')" class="accent">Alle Sequenzen</button>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>LED-Farbe</h2>
+            <div class="color-picker">
+                <label for="colorPicker">Wähle eine Farbe:</label>
+                <input type="color" id="colorPicker" value="#3498db">
+                <div class="button-container">
+                    <button onclick="setColor()" class="accent">Farbe setzen</button>
+                    <button onclick="turnOff()">Ausschalten</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>LED-Pulsieren</h2>
+            <div class="color-picker">
+                <label for="pulsePicker">Wähle eine Pulsierfarbe:</label>
+                <input type="color" id="pulsePicker" value="#e74c3c">
+                <label for="cycleCount">Anzahl der Zyklen:</label>
+                <input type="number" id="cycleCount" min="1" max="10" value="3">
+                <div class="button-container">
+                    <button onclick="pulseLEDs()" class="accent">LEDs pulsieren lassen</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="status" class="status">Bereit</div>
+    
+    <!-- JavaScript einbinden -->
+    <script src="/static/script.js"></script>
+</body>
+</html>
