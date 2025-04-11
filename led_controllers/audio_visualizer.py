@@ -146,29 +146,43 @@ class AudioVisualizer(BaseLEDController):
         
         # Alle LEDs ausschalten
         self.clear_leds()
-
+            
     def _update_leds(self, amplitude):
-        """
-        Aktualisiert die LEDs basierend auf der Audioamplitude
-        
-        :param amplitude: Normalisierte Audioamplitude (0-100)
-        """
         # Berechnen, wie viele LEDs leuchten sollen
         num_leds = int(amplitude / 100 * self.config.LED_PER_STRIP)
         
-        for i in range(self.config.LED_PER_STRIP):
-            if i < num_leds:
-                # Farbverlauf von Grün zu Rot
-                hue = (120 - (i * 120 / self.config.LED_PER_STRIP)) / 360.0
-                r, g, b = [int(x * 255) for x in self._hsv_to_rgb(hue, 1.0, 1.0)]
-                
-                # Setze Farbe für beide Streifen
-                self.strip_one.setPixelColor(i, Color(r, g, b))
-                self.strip_two.setPixelColor(i, Color(r, g, b))
-            else:
-                # Ausschalten für nicht benötigte LEDs
-                self.strip_one.setPixelColor(i, Color(0, 0, 0))
-                self.strip_two.setPixelColor(i, Color(0, 0, 0))
+        # Farbmodus auswählen
+        if self.config.AMPLITUDE_COLOR_MODE == 'fixed':
+            # Festgelegte Farbe verwenden
+            color_hex = self.config.FIXED_AMPLITUDE_COLOR.lstrip('#')
+            r = int(color_hex[0:2], 16)
+            g = int(color_hex[2:4], 16)
+            b = int(color_hex[4:6], 16)
+            
+            for i in range(self.config.LED_PER_STRIP):
+                if i < num_leds:
+                    # Festgelegte Farbe für alle LEDs
+                    self.strip_one.setPixelColor(i, Color(r, g, b))
+                    self.strip_two.setPixelColor(i, Color(r, g, b))
+                else:
+                    # Ausschalten für nicht benötigte LEDs
+                    self.strip_one.setPixelColor(i, Color(0, 0, 0))
+                    self.strip_two.setPixelColor(i, Color(0, 0, 0))
+        else:
+            # Ursprünglicher Farbverlauf
+            for i in range(self.config.LED_PER_STRIP):
+                if i < num_leds:
+                    # Farbverlauf von Grün zu Rot
+                    hue = (120 - (i * 120 / self.config.LED_PER_STRIP)) / 360.0
+                    r, g, b = [int(x * 255) for x in self._hsv_to_rgb(hue, 1.0, 1.0)]
+                    
+                    # Setze Farbe für beide Streifen
+                    self.strip_one.setPixelColor(i, Color(r, g, b))
+                    self.strip_two.setPixelColor(i, Color(r, g, b))
+                else:
+                    # Ausschalten für nicht benötigte LEDs
+                    self.strip_one.setPixelColor(i, Color(0, 0, 0))
+                    self.strip_two.setPixelColor(i, Color(0, 0, 0))
         
         # Aktualisiere LED-Streifen
         self.strip_one.show()

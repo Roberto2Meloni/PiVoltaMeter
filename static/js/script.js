@@ -94,3 +94,29 @@ function changeColorFromPicker() {
     const color = colorPicker.value;
     setColor(color);
 }
+
+function setAmplitudeColor() {
+    const colorPicker = document.getElementById("amplitudeColorPicker");
+    const color = colorPicker.value;
+    const statusDiv = document.getElementById("status");
+    
+    statusDiv.textContent = "Setze Amplituden-Farbe...";
+    statusDiv.className = "status loading";
+    
+    fetch("/set_amplitude_color", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ color: color }),
+    })
+    .then((response) => response.json())
+    .then((data) => {
+        statusDiv.textContent = data.message;
+        statusDiv.className = "status success";
+    })
+    .catch((error) => {
+        statusDiv.textContent = "Fehler: " + error;
+        statusDiv.className = "status error";
+    });
+}

@@ -146,7 +146,7 @@ def start_flask_server():
         app.debug = False  # Debug-Modus muss aus sein
         
         # Zeige Animation für Webserver-bereit
-        only_led.animation_webserver_ready()
+        # only_led.animation_webserver_ready()
         
         # Starte den Server im Hauptthread
         app.run(host='0.0.0.0', port=5000, threaded=True)
@@ -156,3 +156,23 @@ def start_flask_server():
         # Zeige Fehler-Animation
         only_led.animation_webserver_error(loop=True)
 
+@app.route('/set_amplitude_color', methods=['POST'])
+def set_amplitude_color():
+    """Setzt die Farbe für die Amplituden-Visualisierung"""
+    try:
+        data = request.get_json()
+        color = data.get('color', '#00FF00')  # Standardfarbe Grün
+        
+        # Setze Farbe in Konfiguration
+        Config.set_amplitude_color(color)
+        
+        return jsonify({
+            "status": "success", 
+            "message": f"Amplituden-Farbe auf {color} gesetzt"
+        })
+    
+    except Exception as e:
+        return jsonify({
+            "status": "error", 
+            "message": f"Fehler beim Setzen der Amplituden-Farbe: {str(e)}"
+        }), 500

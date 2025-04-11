@@ -25,7 +25,12 @@ class Config:
 
     # Muster-Visualisierungs-Einstellungen
     DEFAULT_PATTERN = 'rainbow'  # Standardmuster
-    VISUALIZATION_MODE = 'static'  # Standardmodus
+    VISUALIZATION_MODE = 'audio'  # Standardmodus
+
+
+    # Neue Konfigurationsoption für Amplituden-Farbe
+    AMPLITUDE_COLOR_MODE = 'gradient'  # Mögliche Werte: 'gradient', 'fixed'
+    FIXED_AMPLITUDE_COLOR = '#00FF00'  # Standardfarbe Grün
 
     @classmethod
     def set_visualization_mode(cls, mode):
@@ -38,3 +43,13 @@ class Config:
             cls.VISUALIZATION_MODE = mode
         else:
             raise ValueError(f"Ungültiger Visualisierungsmodus: {mode}")
+
+    @classmethod
+    def set_amplitude_color(cls, color):
+        """
+        Setzt die Farbe für die Amplituden-Visualisierung
+        
+        :param color: Hex-Farbwert
+        """
+        cls.FIXED_AMPLITUDE_COLOR = color
+        cls.AMPLITUDE_COLOR_MODE = 'fixed'
