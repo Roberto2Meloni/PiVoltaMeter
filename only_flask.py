@@ -42,6 +42,7 @@ def run_all():
     only_led.start_all_start_phase()
     return jsonify({"status": "success", "message": "Alle Sequenzen ausgeführt"})
 
+
 @app.route('/set_color', methods=['POST'])
 def set_color():
     """Setzt alle LEDs auf eine bestimmte Farbe"""
@@ -90,49 +91,49 @@ def set_color():
             "message": f"Fehler beim Setzen der Farbe: {str(e)}"
         }), 500
 
-@app.route('/turn_off', methods=['POST'])
-def turn_off():
-    """Schaltet alle LEDs aus"""
-    try:
-        for i in range(only_led.LED_PER_STRIP):
-            only_led.strip_one.setPixelColor(i, Color(0, 0, 0))
-            only_led.strip_two.setPixelColor(i, Color(0, 0, 0))
+# @app.route('/turn_off', methods=['POST'])
+# def turn_off():
+#     """Schaltet alle LEDs aus"""
+#     try:
+#         for i in range(only_led.LED_PER_STRIP):
+#             only_led.strip_one.setPixelColor(i, Color(0, 0, 0))
+#             only_led.strip_two.setPixelColor(i, Color(0, 0, 0))
         
-        only_led.strip_one.show()
-        only_led.strip_two.show()
+#         only_led.strip_one.show()
+#         only_led.strip_two.show()
         
-        return jsonify({
-            "status": "success", 
-            "message": "Alle LEDs ausgeschaltet"
-        })
+#         return jsonify({
+#             "status": "success", 
+#             "message": "Alle LEDs ausgeschaltet"
+#         })
     
-    except Exception as e:
-        return jsonify({
-            "status": "error", 
-            "message": f"Fehler beim Ausschalten der LEDs: {str(e)}"
-        }), 500
+#     except Exception as e:
+#         return jsonify({
+#             "status": "error", 
+#             "message": f"Fehler beim Ausschalten der LEDs: {str(e)}"
+#         }), 500
 
-@app.route('/pulse_leds', methods=['POST'])
-def pulse_leds():
-    """Lässt LEDs in einer bestimmten Farbe pulsieren"""
-    try:
-        data = request.get_json()
-        color = data.get('color', '#3498db')  # Standardfarbe ist Blau
-        cycles = int(data.get('cycles', 3))   # Standardmäßig 3 Zyklen
+# @app.route('/pulse_leds', methods=['POST'])
+# def pulse_leds():
+#     """Lässt LEDs in einer bestimmten Farbe pulsieren"""
+#     try:
+#         data = request.get_json()
+#         color = data.get('color', '#3498db')  # Standardfarbe ist Blau
+#         cycles = int(data.get('cycles', 3))   # Standardmäßig 3 Zyklen
         
-        # Rufe Pulsier-Funktion auf
-        only_led.pulsing_all_led(color, cycles)
+#         # Rufe Pulsier-Funktion auf
+#         only_led.pulsing_all_led(color, cycles)
         
-        return jsonify({
-            "status": "success", 
-            "message": f"LEDs haben in Farbe {color} für {cycles} Zyklen gepulst"
-        })
+#         return jsonify({
+#             "status": "success", 
+#             "message": f"LEDs haben in Farbe {color} für {cycles} Zyklen gepulst"
+#         })
     
-    except Exception as e:
-        return jsonify({
-            "status": "error", 
-            "message": f"Fehler beim Pulsieren der LEDs: {str(e)}"
-        }), 500
+#     except Exception as e:
+#         return jsonify({
+#             "status": "error", 
+#             "message": f"Fehler beim Pulsieren der LEDs: {str(e)}"
+#         }), 500
 
 def start_flask_server():
     """Startet den Flask-Webserver mit Animations-Feedback"""
@@ -156,12 +157,14 @@ def start_flask_server():
         # Zeige Fehler-Animation
         only_led.animation_webserver_error(loop=True)
 
+
 @app.route('/set_amplitude_color', methods=['POST'])
 def set_amplitude_color():
     """Setzt die Farbe für die Amplituden-Visualisierung"""
     try:
         data = request.get_json()
         color = data.get('color', '#00FF00')  # Standardfarbe Grün
+        print(f"Wechsel Farbe für Amplitude auf auf {color} | Defualt 00FF00")
         
         # Setze Farbe in Konfiguration
         Config.set_amplitude_color(color)

@@ -46,13 +46,29 @@
             </div>
         </div>
       </div>
-      <div class="card">
-        <h2>Farbwechsel</h2>
-        <div class="color-control">
-            <label for="colorPicker">Wählen Sie eine Farbe:</label>
-            <input type="color" id="colorPicker">
-            <button onclick="changeColorFromPicker()">Farbe wählen</button>
+<div class="card">
+    <h2>Farbwechsel</h2>
+    <div class="color-control">
+        <div class="color-buttons">
+            <button onclick="setAmplitudeColor('#ff0000')" class="color-btn" style="background-color: #ff0000;">Rot</button>
+            <button onclick="setAmplitudeColor('#00ff00')" class="color-btn" style="background-color: #00ff00;">Grün</button>
+            <button onclick="setAmplitudeColor('#0000ff')" class="color-btn" style="background-color: #0000ff;">Blau</button>
+            <button onclick="setAmplitudeColor('#ffff00')" class="color-btn" style="background-color: #ffff00;">Gelb</button>
+            <button onclick="setAmplitudeColor('#ff00ff')" class="color-btn" style="background-color: #ff00ff;">Pink</button>
+            <button onclick="setAmplitudeColor('#00ffff')" class="color-btn" style="background-color: #00ffff;">Cyan</button>
+            <button onclick="setAmplitudeColor('#ffffff')" class="color-btn" style="background-color: #ffffff; color: #333; border: 1px solid #ddd;">Weiß</button>
+            <button onclick="setAmplitudeColor('#ffa500')" class="color-btn" style="background-color: #ffa500;">Orange</button>
+            <button onclick="setAmplitudeColor('#800080')" class="color-btn" style="background-color: #800080;">Lila</button>
         </div>
+        <div class="color-control">
+            <label for="amplitudeColorPicker">Oder wählen Sie eine benutzerdefinierte Farbe:</label>
+            <input type="color" id="amplitudeColorPicker">
+            <button onclick="setCustomAmplitudeColor()">Benutzerdefinierte Farbe</button>
+        </div>
+    </div>
+</div>
+
+
       </div>
       <div id="status" class="status">Bereit</div>
     </div>

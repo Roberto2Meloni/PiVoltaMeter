@@ -1,92 +1,81 @@
-function runSequence(endpoint) {
-  const statusDiv = document.getElementById("status");
-  statusDiv.textContent = "Führe Sequenz aus...";
-  statusDiv.className = "status loading";
+function updateStatus(message, status = 'loading') {
+    const statusDiv = document.getElementById("status");
+    statusDiv.textContent = message;
+    statusDiv.className = `status ${status}`;
+}
 
-  fetch("/" + endpoint)
-    .then((response) => response.json())
-    .then((data) => {
-      statusDiv.textContent = data.message;
-      statusDiv.className = "status success";
-    })
-    .catch((error) => {
-      statusDiv.textContent = "Fehler: " + error;
-      statusDiv.className = "status error";
-    });
+function runSequence(endpoint) {
+    updateStatus(`Führe Sequenz aus...`);
+
+    fetch("/" + endpoint)
+        .then((response) => response.json())
+        .then((data) => {
+            updateStatus(data.message, 'success');
+        })
+        .catch((error) => {
+            updateStatus(`Fehler: ${error}`, 'error');
+        });
 }
 
 function setColor(color) {
-  const statusDiv = document.getElementById("status");
+    updateStatus(`Setze LEDs auf Farbe ${color}...`);
 
-  statusDiv.textContent = "Setze LEDs auf Farbe " + color + "...";
-  statusDiv.className = "status loading";
-
-  fetch("/set_color", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ color: color }),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      statusDiv.textContent = data.message;
-      statusDiv.className = "status success";
+    fetch("/set_color", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ color: color }),
     })
-    .catch((error) => {
-      statusDiv.textContent = "Fehler: " + error;
-      statusDiv.className = "status error";
-    });
+        .then((response) => response.json())
+        .then((data) => {
+            updateStatus(data.message, 'success');
+        })
+        .catch((error) => {
+            updateStatus(`Fehler: ${error}`, 'error');
+        });
 }
 
 function turnOff() {
-  const statusDiv = document.getElementById("status");
-  statusDiv.textContent = "Schalte LEDs aus...";
-  statusDiv.className = "status loading";
+    updateStatus("Schalte LEDs aus...");
 
-  fetch("/turn_off", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({}),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      statusDiv.textContent = data.message;
-      statusDiv.className = "status success";
+    fetch("/turn_off", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({}),
     })
-    .catch((error) => {
-      statusDiv.textContent = "Fehler: " + error;
-      statusDiv.className = "status error";
-    });
+        .then((response) => response.json())
+        .then((data) => {
+            updateStatus(data.message, 'success');
+        })
+        .catch((error) => {
+            updateStatus(`Fehler: ${error}`, 'error');
+        });
 }
 
 function pulseLEDs() {
-  const colorPicker = document.getElementById("pulsePicker");
-  const color = colorPicker.value;
-  const cycleCount = document.getElementById("cycleCount").value;
-  const statusDiv = document.getElementById("status");
+    const colorPicker = document.getElementById("pulsePicker");
+    const color = colorPicker.value;
+    const cycleCount = document.getElementById("cycleCount").value;
 
-  statusDiv.textContent = "Lasse LEDs in " + color + " pulsieren...";
-  statusDiv.className = "status loading";
+    updateStatus(`Lasse LEDs in ${color} pulsieren...`);
 
-  fetch("/pulse_leds", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ color: color, cycles: cycleCount }),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      statusDiv.textContent = data.message;
-      statusDiv.className = "status success";
+    fetch("/pulse_leds", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ color: color, cycles: cycleCount }),
     })
-    .catch((error) => {
-      statusDiv.textContent = "Fehler: " + error;
-      statusDiv.className = "status error";
-    });
+        .then((response) => response.json())
+        .then((data) => {
+            updateStatus(data.message, 'success');
+        })
+        .catch((error) => {
+            updateStatus(`Fehler: ${error}`, 'error');
+        });
 }
 
 function changeColorFromPicker() {
@@ -95,14 +84,9 @@ function changeColorFromPicker() {
     setColor(color);
 }
 
-function setAmplitudeColor() {
-    const colorPicker = document.getElementById("amplitudeColorPicker");
-    const color = colorPicker.value;
-    const statusDiv = document.getElementById("status");
-    
-    statusDiv.textContent = "Setze Amplituden-Farbe...";
-    statusDiv.className = "status loading";
-    
+function setAmplitudeColor(color) {
+    updateStatus(`Setze Amplituden-Farbe ${color}...`);
+
     fetch("/set_amplitude_color", {
         method: "POST",
         headers: {
@@ -110,13 +94,17 @@ function setAmplitudeColor() {
         },
         body: JSON.stringify({ color: color }),
     })
-    .then((response) => response.json())
-    .then((data) => {
-        statusDiv.textContent = data.message;
-        statusDiv.className = "status success";
-    })
-    .catch((error) => {
-        statusDiv.textContent = "Fehler: " + error;
-        statusDiv.className = "status error";
-    });
+        .then((response) => response.json())
+        .then((data) => {
+            updateStatus(data.message, 'success');
+        })
+        .catch((error) => {
+            updateStatus(`Fehler: ${error}`, 'error');
+        });
+}
+
+function setCustomAmplitudeColor() {
+    const colorPicker = document.getElementById("amplitudeColorPicker");
+    const color = colorPicker.value;
+    setAmplitudeColor(color);
 }
