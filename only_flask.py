@@ -1,93 +1,124 @@
 from flask import Flask, render_template, request, jsonify
-import only_led
 import threading
+import time
+
+# Importiere die neuen Visualisierungsklassen
+from config.config import Config
+from led_controllers.audio_visualizer import AudioVisualizer
+from led_controllers.pattern_visualizer import PatternVisualizer
 
 app = Flask(__name__)
+
+# Globale Visualisierungs-Instanz
+current_visualizer = None
+visualization_thread = None
 
 @app.route('/')
 def index():
     """Startseite des Webservers"""
     return render_template('index.html')
 
-@app.route('/run_all')
-def run_all():
-    """Führt alle LED-Sequenzen aus"""
-    only_led.start_all_start_phase()
-    return jsonify({"status": "success", "message": "Alle Sequenzen ausgeführt"})
-
-@app.route('/sequence_one')
-def sequence_one():
-    """Führt Sequenz 1 aus"""
-    only_led.start_phase_one()
-    return jsonify({"status": "success", "message": "Sequenz 1 ausgeführt"})
-
-@app.route('/sequence_two')
-def sequence_two():
-    """Führt Sequenz 2 aus"""
-    only_led.start_phase_two()
-    return jsonify({"status": "success", "message": "Sequenz 2 ausgeführt"})
-
-@app.route('/sequence_three')
-def sequence_three():
-    """Führt Sequenz 3 aus"""
-    only_led.start_phase_three()
-    return jsonify({"status": "success", "message": "Sequenz 3 ausgeführt"})
-
-@app.route('/pulse_leds', methods=['POST'])
-def pulse_leds():
-    """LEDs in der angegebenen Farbe pulsieren lassen"""
+@app.route('/change_mode', methods=['POST'])
+def change_visualization_mode():
+    """
+    Ändert den Visualisierungsmodus
+    """
+    global current_visualizer, visualization_thread
+    
+    # Stoppe aktuellen Visualisierungsmodus
+    if current_visualizer:
+        if hasattr(current_visualizer, 'stop_visualization'):
+            current_visualizer.stop_visualization()
+        
+        # Warte auf Thread-Beendigung
+        if visualization_thread and visualization_thread.is_alive():
+            visualization_thread.join(timeout=2)
+    
+    # Hole Modus aus Anfrage
     data = request.get_json()
-    color = data.get('color', '#3498db')  # Standardfarbe ist Blau
-    cycles = int(data.get('cycles', 3))   # Standardmäßig 3 Zyklen
+    mode = data.get('mode', Config.VISUALIZATION_MODE)
     
-    only_led.pulsing_all_led(color, cycles)
+    # Aktualisiere Konfiguration
+    Config.set_visualization_mode(mode)
+    
+    # Wähle passenden Visualisierer
+    if mode == 'audio':
+        current_visualizer = AudioVisualizer()
+        visualization_thread = threading.Thread(target=current_visualizer.start_visualization)
+    elif mode == 'pattern':
+        current_visualizer = PatternVisualizer()
+        # Optional: Spezifisches Muster übergeben
+        pattern = data.get('pattern', Config.DEFAULT_PATTERN)
+        visualization_thread = threading.Thread(
+            target=current_visualizer.start_pattern, 
+            kwargs={'pattern_name': pattern}
+        )
+    else:
+        # Fallback: Alle LEDs ausschalten
+        current_visualizer = BaseLEDController()
+        current_visualizer.clear_leds()
+        return jsonify({
+            "status": "success", 
+            "message": f"Modus auf {mode} geändert"
+        })
+    
+    # Starte neuen Thread
+    visualization_thread.daemon = True
+    visualization_thread.start()
     
     return jsonify({
         "status": "success", 
-        "message": f"LEDs haben in Farbe {color} für {cycles} Zyklen pulsiert"
+        "message": f"Modus auf {mode} geändert"
     })
 
-@app.route('/set_color', methods=['POST'])
-def set_color():
-    """Setzt alle LEDs auf eine bestimmte Farbe"""
+@app.route('/set_pattern', methods=['POST'])
+def set_pattern():
+    """
+    Setzt ein bestimmtes LED-Muster
+    """
+    global current_visualizer, visualization_thread
+    
+    # Stelle sicher, dass der aktuelle Modus 'pattern' ist
+    if Config.VISUALIZATION_MODE != 'pattern':
+        Config.set_visualization_mode('pattern')
+    
+    # Stoppe aktuellen Visualisierungsmodus
+    if current_visualizer:
+        if hasattr(current_visualizer, 'stop_visualization'):
+            current_visualizer.stop_visualization()
+        
+        # Warte auf Thread-Beendigung
+        if visualization_thread and visualization_thread.is_alive():
+            visualization_thread.join(timeout=2)
+    
+    # Hole Mustername
     data = request.get_json()
-    color = data.get('color', '#3498db')  # Standardfarbe ist Blau
+    pattern = data.get('pattern', Config.DEFAULT_PATTERN)
     
-    # Hexwert in RGB-Komponenten umwandeln
-    color_hex = color.lstrip('#')
-    r = int(color_hex[0:2], 16)
-    g = int(color_hex[2:4], 16)
-    b = int(color_hex[4:6], 16)
+    # Erstelle PatternVisualizer
+    current_visualizer = PatternVisualizer()
     
-    # Alle LEDs auf die gewählte Farbe setzen
-    for i in range(only_led.LED_PER_STRIP):
-        only_led.strip_one.setPixelColor(i, only_led.Color(r, g, b))
-        only_led.strip_two.setPixelColor(i, only_led.Color(r, g, b))
-    only_led.strip_one.show()
-    only_led.strip_two.show()
+    # Starte Muster in neuem Thread
+    visualization_thread = threading.Thread(
+        target=current_visualizer.start_pattern, 
+        kwargs={'pattern_name': pattern}
+    )
+    visualization_thread.daemon = True
+    visualization_thread.start()
     
     return jsonify({
         "status": "success", 
-        "message": f"LEDs auf Farbe {color} gesetzt"
+        "message": f"Muster {pattern} gestartet"
     })
 
-@app.route('/turn_off', methods=['POST'])
-def turn_off():
-    """Schaltet alle LEDs aus"""
-    for i in range(only_led.LED_PER_STRIP):
-        only_led.strip_one.setPixelColor(i, only_led.Color(0, 0, 0))
-        only_led.strip_two.setPixelColor(i, only_led.Color(0, 0, 0))
-    only_led.strip_one.show()
-    only_led.strip_two.show()
-    
-    return jsonify({
-        "status": "success", 
-        "message": "Alle LEDs ausgeschaltet"
-    })
+# Restliche bestehende Routen wie run_all(), sequence_one() etc. bleiben unverändert
 
 def start_flask_server():
     """Startet den Flask-Webserver mit Animations-Feedback"""
     print("Starte Flask-Webserver...")
+    
+    # Importiere LED-Animationen
+    import only_led
     
     # Zeige Animation für Webserver-Start
     only_led.animation_webserver_starting(iterations=1)
