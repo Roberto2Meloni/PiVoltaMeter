@@ -45,3 +45,80 @@ pip install -r requirements.txt
 ```bash 
 sudo python main.py
 ```
+
+5. Kontrolle der Audio Schnitstelle
+```bash 
+cat /proc/asound/modules
+
+sudo nano /etc/modprobe.d/alsa-base.conf
+```
+
+6. Füge folgende Zeilen in den Editor und starte den Pi danach neu.
+```bash 
+options snd_usb_audio index=0
+options snd_bcm2835 index=1
+options snd slots=snd-usb-audio,snd-bcm2835
+```
+
+7. Nach dem Neustart sollte die Ausgabe nun die snd_bcm2835 als 0 definiert haben.
+```bash 
+cat /proc/asound/modules
+```
+
+8. Weitere installiert pakete
+sudo apt-get install libopenblas-dev
+sudo apt-get install portaudio19-dev
+pip uninstall numpy
+pip install numpy
+sudo nano /etc/asound.conf
+pcm.!default {
+    type asym
+    playback.pcm "hw:0,0"
+    capture.pcm "dsnoop"
+}
+
+pcm.dummy {
+    type null
+    slave.pcm "hw:0,0"
+}
+
+pcm.dsnoop {
+    type dmix
+    ipc_key 1234
+    slave {
+        pcm "dummy"
+        period_time 0
+        period_size 1024
+        buffer_size 4096
+        rate 44100
+        channels 2
+    }
+}
+
+nano /etc/modprobe.d/raspi-blacklist.conf 
+blacklist snd_bcm2835
+
+sudo nano /boot/firmware/config.txt
+# I2S Mikrofon Aktivierung
+dtoverlay=i2s-mems-mic
+
+# ALSA für Recording aktivieren
+dtparam=audio=on
+
+# Enable audio (loads snd_bcm2835)
+dtparam=audio=off
+
+
+sudo apt-get install alsa-utils
+
+jetzt richtig?
+sudo nano /etc/asound.conf
+reboot pi
+
+
+und jetzt?
+cat <<EOF | sudo tee /etc/modprobe.d/blacklist-rgb-matrix.conf
+blacklist snd_bcm2835
+EOF
+
+sudo update-initramfs -u

@@ -2,7 +2,8 @@
 import time
 import random
 from rpi_ws281x import PixelStrip, Color
-
+import pyaudio
+import numpy as np
 
 # Konfiguration für die WS2812b LEDs
 LED_PER_STRIP = 10
@@ -33,6 +34,8 @@ def random_color():
         random.randint(0, 255),  # G
         random.randint(0, 255)   # B
     )
+
+
 
 def start_phase_one():
     """Start-Animation: LEDs werden nacheinander mit zufälligen Farben eingeschaltet"""
@@ -330,3 +333,134 @@ def pulsing_all_led(color_hex, cycles=3):
         strip_two.setPixelColor(i, Color(0, 0, 0))
     strip_one.show()
     strip_two.show()
+
+def hsv_to_rgb(h, s, v):
+    """Konvertiert HSV-Farbwerte in RGB"""
+    if s == 0.0:
+        return v, v, v
+    
+    i = int(h * 6)
+    f = (h * 6) - i
+    p = v * (1 - s)
+    q = v * (1 - s * f)
+    t = v * (1 - s * (1 - f))
+    
+    if i % 6 == 0:
+        return v, t, p
+    elif i % 6 == 1:
+        return q, v, p
+    elif i % 6 == 2:
+        return p, v, t
+    elif i % 6 == 3:
+        return p, q, v
+    elif i % 6 == 4:
+        return t, p, v
+    else:
+        return v, p, q
+
+
+def audio_visualizer():
+    # Audio-Parameter
+    FORMAT = pyaudio.paInt16
+    CHANNELS = 1
+    RATE = 44100
+    CHUNK = 1024
+    
+    # Verwende einen Glättungsfaktor für flüssigere Übergänge
+    smoothing = 0.3  # Niedrigerer Wert = weniger Glättung, höherer Wert = mehr Glättung
+    last_amplitude = 0
+    
+    p = pyaudio.PyAudio()
+    
+    # Geräteinformationen ausgeben
+    print("Verfügbare Audiogeräte:")
+    for i in range(p.get_device_count()):
+        dev_info = p.get_device_info_by_index(i)
+        print(f"Device {i}: {dev_info['name']}")
+        print(f"  Max Input Channels: {dev_info['maxInputChannels']}")
+        print(f"  Default Sample Rate: {dev_info['defaultSampleRate']}")
+    
+    # Finde das erste Eingabegerät
+    device_index = None
+    for i in range(p.get_device_count()):
+        dev_info = p.get_device_info_by_index(i)
+        if dev_info['maxInputChannels'] > 0:
+            device_index = i
+            break
+    
+    if device_index is None:
+        print("Kein Eingabegerät gefunden!")
+        return
+    
+    try:
+        print(f"Öffne Audiogerät {device_index}...")
+        stream = p.open(format=FORMAT,
+                       channels=CHANNELS,
+                       rate=RATE,
+                       input=True,
+                       input_device_index=device_index,
+                       frames_per_buffer=CHUNK)
+        
+        print("Audio-Visualisierung gestartet... (Drücken Sie Strg+C zum Beenden)")
+        
+        while True:
+            # Lese Audiodaten
+            data = stream.read(CHUNK, exception_on_overflow=False)
+            
+            # Konvertiere zu numpy array
+            audio_data = np.frombuffer(data, dtype=np.int16)
+            
+            # Sichere Berechnung der RMS-Amplitude
+            if len(audio_data) > 0 and np.any(np.isfinite(audio_data)):
+                # Berechne RMS-Amplitude
+                amplitude_rms = np.sqrt(np.mean(np.square(audio_data.astype(float))))
+                
+                # Normalisiere auf Bereich 0-100
+                amplitude_scaled = min(100, int(amplitude_rms / 32768 * 100))
+                
+                # Wende Glättung an
+                smoothed_amplitude = last_amplitude * smoothing + amplitude_scaled * (1 - smoothing)
+                last_amplitude = smoothed_amplitude
+                
+                # Visualisiere in Konsole
+                bar = '#' * int(smoothed_amplitude / 2)
+                print(f"Amplitude: {smoothed_amplitude:3.1f}/100 |{bar:<50}|", end='\r')
+                
+                # Berechne, wie viele LEDs leuchten sollen
+                num_leds = int(smoothed_amplitude / 100 * LED_PER_STRIP)
+                
+                # Aktualisiere LEDs
+                for i in range(LED_PER_STRIP):
+                    if i < num_leds:
+                        # Farbverlauf von Grün zu Rot
+                        hue = (120 - (i * 120 / LED_PER_STRIP)) / 360.0
+                        r, g, b = [int(x * 255) for x in hsv_to_rgb(hue, 1.0, 1.0)]
+                        strip_one.setPixelColor(i, Color(r, g, b))
+                        strip_two.setPixelColor(i, Color(r, g, b))
+                    else:
+                        strip_one.setPixelColor(i, Color(0, 0, 0))
+                        strip_two.setPixelColor(i, Color(0, 0, 0))
+                
+                strip_one.show()
+                strip_two.show()
+            else:
+                print("Keine gültigen Audiodaten gefunden.", end='\r')
+    
+    except KeyboardInterrupt:
+        print("\nBeendet.")
+    except Exception as e:
+        print(f"\nFehler: {e}")
+        import traceback
+        traceback.print_exc()
+    finally:
+        if 'stream' in locals():
+            stream.stop_stream()
+            stream.close()
+        p.terminate()
+        
+        # Alle LEDs ausschalten
+        for i in range(LED_PER_STRIP):
+            strip_one.setPixelColor(i, Color(0, 0, 0))
+            strip_two.setPixelColor(i, Color(0, 0, 0))
+        strip_one.show()
+        strip_two.show()
