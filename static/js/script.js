@@ -88,3 +88,9 @@ function pulseLEDs() {
       statusDiv.className = "status error";
     });
 }
+
+function changeColorFromPicker() {
+    const colorPicker = document.getElementById("colorPicker");
+    const color = colorPicker.value;
+    setColor(color);
+}

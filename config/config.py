@@ -25,6 +25,7 @@ class Config:
 
     # Muster-Visualisierungs-Einstellungen
     DEFAULT_PATTERN = 'rainbow'  # Standardmuster
+    VISUALIZATION_MODE = 'static'  # Standardmodus
 
     @classmethod
     def set_visualization_mode(cls, mode):

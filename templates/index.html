@@ -11,7 +11,6 @@
       <h1>PiVoltMeter</h1>
       <p class="subtitle">LED-Steuerung für Raspberry Pi</p>
     </header>
-
     <div class="container">
       <div class="card">
         <h2>Start Sequenzen</h2>
@@ -24,15 +23,13 @@
           </button>
         </div>
       </div>
-
       <div class="card">
         <h2>LED Muster</h2>
-
         <div class="button-container">
           <button onclick="pulseLEDs()" class="accent">Pulsieren</button>
         </div>
       </div>
-<div class="card">
+      <div class="card">
         <h2>LED-Farbe</h2>
         <div class="color-selection">
             <p>Wähle eine Farbe:</p>
@@ -48,10 +45,17 @@
                 <button onclick="setColor('#800080')" class="color-btn" style="background-color: #800080;">Lila</button>
             </div>
         </div>
+      </div>
+      <div class="card">
+        <h2>Farbwechsel</h2>
+        <div class="color-control">
+            <label for="colorPicker">Wählen Sie eine Farbe:</label>
+            <input type="color" id="colorPicker">
+            <button onclick="changeColorFromPicker()">Farbe wählen</button>
+        </div>
+      </div>
+      <div id="status" class="status">Bereit</div>
     </div>
-
-    <div id="status" class="status">Bereit</div>
-
     <!-- JavaScript einbinden -->
     <script src="/static/js/script.js"></script>
   </body>
