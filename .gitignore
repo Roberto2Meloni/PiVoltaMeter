@@ -11,3 +11,6 @@ __pycache__/
 
 # Andere Dateien, die nicht ins Repository gehören
 *.log
+
+# Sonstiges
+settings.json

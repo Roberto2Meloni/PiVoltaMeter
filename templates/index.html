@@ -1,57 +1,58 @@
 <!DOCTYPE html>
 <html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PiVoltMeter</title>
-    <link rel="stylesheet" href="/static/style.css">
-</head>
-<body>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
     <header>
-        <h1>PiVoltMeter</h1>
-        <p class="subtitle">LED-Steuerung für Raspberry Pi</p>
+      <h1>PiVoltMeter</h1>
+      <p class="subtitle">LED-Steuerung für Raspberry Pi</p>
     </header>
-    
+
     <div class="container">
-        <div class="card">
-            <h2>LED-Start-Sequenzen</h2>
-            <div class="button-container">
-                <button onclick="runSequence('sequence_one')">Sequenz 1</button>
-                <button onclick="runSequence('sequence_two')">Sequenz 2</button>
-                <button onclick="runSequence('sequence_three')">Sequenz 3</button>
-                <button onclick="runSequence('run_all')" class="accent">Alle Sequenzen</button>
-            </div>
+      <div class="card">
+        <h2>Start Sequenzen</h2>
+        <div class="button-container">
+          <button onclick="runSequence('sequence_one')">Sequenz 1</button>
+          <button onclick="runSequence('sequence_two')">Sequenz 2</button>
+          <button onclick="runSequence('sequence_three')">Sequenz 3</button>
+          <button onclick="runSequence('run_all')" class="accent">
+            Alle Sequenzen
+          </button>
         </div>
-        
-        <div class="card">
-            <h2>LED-Farbe</h2>
-            <div class="color-picker">
-                <label for="colorPicker">Wähle eine Farbe:</label>
-                <input type="color" id="colorPicker" value="#3498db">
-                <div class="button-container">
-                    <button onclick="setColor()" class="accent">Farbe setzen</button>
-                    <button onclick="turnOff()">Ausschalten</button>
-                </div>
-            </div>
+      </div>
+
+      <div class="card">
+        <h2>LED Muster</h2>
+
+        <div class="button-container">
+          <button onclick="pulseLEDs()" class="accent">Pulsieren</button>
         </div>
-        
-        <div class="card">
-            <h2>LED-Pulsieren</h2>
-            <div class="color-picker">
-                <label for="pulsePicker">Wähle eine Pulsierfarbe:</label>
-                <input type="color" id="pulsePicker" value="#e74c3c">
-                <label for="cycleCount">Anzahl der Zyklen:</label>
-                <input type="number" id="cycleCount" min="1" max="10" value="3">
-                <div class="button-container">
-                    <button onclick="pulseLEDs()" class="accent">LEDs pulsieren lassen</button>
-                </div>
+      </div>
+<div class="card">
+        <h2>LED-Farbe</h2>
+        <div class="color-selection">
+            <p>Wähle eine Farbe:</p>
+            <div class="color-buttons">
+                <button onclick="setColor('#ff0000')" class="color-btn" style="background-color: #ff0000;">Rot</button>
+                <button onclick="setColor('#00ff00')" class="color-btn" style="background-color: #00ff00;">Grün</button>
+                <button onclick="setColor('#0000ff')" class="color-btn" style="background-color: #0000ff;">Blau</button>
+                <button onclick="setColor('#ffff00')" class="color-btn" style="background-color: #ffff00;">Gelb</button>
+                <button onclick="setColor('#ff00ff')" class="color-btn" style="background-color: #ff00ff;">Pink</button>
+                <button onclick="setColor('#00ffff')" class="color-btn" style="background-color: #00ffff;">Cyan</button>
+                <button onclick="setColor('#ffffff')" class="color-btn" style="background-color: #ffffff; color: #333; border: 1px solid #ddd;">Weiß</button>
+                <button onclick="setColor('#ffa500')" class="color-btn" style="background-color: #ffa500;">Orange</button>
+                <button onclick="setColor('#800080')" class="color-btn" style="background-color: #800080;">Lila</button>
             </div>
         </div>
     </div>
-    
+
     <div id="status" class="status">Bereit</div>
-    
+
     <!-- JavaScript einbinden -->
     <script src="/static/script.js"></script>
-</body>
+  </body>
 </html>
