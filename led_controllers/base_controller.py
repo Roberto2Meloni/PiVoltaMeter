@@ -16,7 +16,7 @@ class BaseLEDController:
             self.config.LED_PER_STRIP, 
             self.config.LED_PIN_ONE, 
             self.config.LED_FREQ_HZ, 
-            self.config.LED_DMA, 
+            self.config.LED_DMA_ONE, 
             self.config.LED_INVERT, 
             self.config.LED_BRIGHTNESS, 
             self.config.LED_CHANNEL_ONE

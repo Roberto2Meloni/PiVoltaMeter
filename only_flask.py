@@ -18,29 +18,57 @@ def index():
     """Startseite des Webservers"""
     return render_template('index.html')
 
-@app.route('/sequence_one')
-def sequence_one():
-    """Führt Sequenz 1 aus"""
-    only_led.start_phase_one()
-    return jsonify({"status": "success", "message": "Sequenz 1 ausgeführt"})
+# @app.route('/sequence_one')
+# def sequence_one():
+#     """Führt Sequenz 1 aus"""
+#     only_led.start_phase_one()
+#     return jsonify({"status": "success", "message": "Sequenz 1 ausgeführt"})
 
-@app.route('/sequence_two')
-def sequence_two():
-    """Führt Sequenz 2 aus"""
-    only_led.start_phase_two()
-    return jsonify({"status": "success", "message": "Sequenz 2 ausgeführt"})
+# @app.route('/sequence_two')
+# def sequence_two():
+#     """Führt Sequenz 2 aus"""
+#     only_led.start_phase_two()
+#     return jsonify({"status": "success", "message": "Sequenz 2 ausgeführt"})
 
-@app.route('/sequence_three')
-def sequence_three():
-    """Führt Sequenz 3 aus"""
-    only_led.start_phase_three()
-    return jsonify({"status": "success", "message": "Sequenz 3 ausgeführt"})
+# @app.route('/sequence_three')
+# def sequence_three():
+#     """Führt Sequenz 3 aus"""
+#     only_led.start_phase_three()
+#     return jsonify({"status": "success", "message": "Sequenz 3 ausgeführt"})
 
-@app.route('/run_all')
-def run_all():
-    """Führt alle LED-Sequenzen aus"""
-    only_led.start_all_start_phase()
-    return jsonify({"status": "success", "message": "Alle Sequenzen ausgeführt"})
+# @app.route('/run_all')
+# def run_all():
+#     """Führt alle LED-Sequenzen aus"""
+#     only_led.start_all_start_phase()
+#     return jsonify({"status": "success", "message": "Alle Sequenzen ausgeführt"})
+
+@app.route('/set_visualization_mode', methods=['POST'])
+def set_visualization_mode():
+    data = request.get_json()
+    current_mode = Config.VISUALIZATION_MODE
+    new_mode = data.get('mode', 'audio')
+    
+    # debug
+    print(f"Aktueller modus: {current_mode}")
+    print(f"Empfangener modus: {new_mode}")
+
+    # Validieren und umstellen des Modus
+    if new_mode in ['audio', 'pattern', 'off']:
+        if new_mode == 'off':
+            # Das System erwartet möglicherweise 'static' statt 'off'
+            Config.set_visualization_mode('static')
+        else:
+            Config.set_visualization_mode(new_mode)
+        
+        return jsonify({
+            "status": "success", 
+            "message": f"Visualisierungs Modus umgestellt auf {new_mode}"
+        })
+    else:
+        return jsonify({
+            "status": "error", 
+            "message": f"Ungültiger Modus: {new_mode}. Erlaubte Modi: audio, pattern, off"
+        }), 400
 
 
 @app.route('/set_color', methods=['POST'])
@@ -158,24 +186,24 @@ def start_flask_server():
         only_led.animation_webserver_error(loop=True)
 
 
-@app.route('/set_amplitude_color', methods=['POST'])
-def set_amplitude_color():
-    """Setzt die Farbe für die Amplituden-Visualisierung"""
-    try:
-        data = request.get_json()
-        color = data.get('color', '#00FF00')  # Standardfarbe Grün
-        print(f"Wechsel Farbe für Amplitude auf auf {color} | Defualt 00FF00")
+# @app.route('/set_amplitude_color', methods=['POST'])
+# def set_amplitude_color():
+#     """Setzt die Farbe für die Amplituden-Visualisierung"""
+#     try:
+#         data = request.get_json()
+#         color = data.get('color', '#00FF00')  # Standardfarbe Grün
+#         print(f"Wechsel Farbe für Amplitude auf auf {color} | Defualt 00FF00")
         
-        # Setze Farbe in Konfiguration
-        Config.set_amplitude_color(color)
+#         # Setze Farbe in Konfiguration
+#         Config.set_amplitude_color(color)
         
-        return jsonify({
-            "status": "success", 
-            "message": f"Amplituden-Farbe auf {color} gesetzt"
-        })
+#         return jsonify({
+#             "status": "success", 
+#             "message": f"Amplituden-Farbe auf {color} gesetzt"
+#         })
     
-    except Exception as e:
-        return jsonify({
-            "status": "error", 
-            "message": f"Fehler beim Setzen der Amplituden-Farbe: {str(e)}"
-        }), 500
+#     except Exception as e:
+#         return jsonify({
+#             "status": "error", 
+#             "message": f"Fehler beim Setzen der Amplituden-Farbe: {str(e)}"
+#         }), 500

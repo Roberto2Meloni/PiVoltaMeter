@@ -1,78 +1,17 @@
-<!DOCTYPE html>
-<html lang="de">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PiVoltMeter</title>
-    <link rel="stylesheet" href="/static/css/style.css" />
-  </head>
-  <body>
+<body>
     <header>
       <h1>PiVoltMeter</h1>
-      <p class="subtitle">LED-Steuerung für Raspberry Pi</p>
     </header>
     <div class="container">
       <div class="card">
-        <h2>Start Sequenzen</h2>
-        <div class="button-container">
-          <button onclick="runSequence('sequence_one')">Sequenz 1</button>
-          <button onclick="runSequence('sequence_two')">Sequenz 2</button>
-          <button onclick="runSequence('sequence_three')">Sequenz 3</button>
-          <button onclick="runSequence('run_all')" class="accent">
-            Alle Sequenzen
-          </button>
+        <h2>Visualisierungsmodus</h2>
+        <div class="visualization-controls">
+          <button id="audio-mode" onclick="setVisualizationMode('audio')">Audio</button>
+          <button id="pattern-mode" onclick="setVisualizationMode('pattern')">Pattern</button>
+          <button id="off-mode" onclick="setVisualizationMode('off')">Off</button>
         </div>
-      </div>
-      <div class="card">
-        <h2>LED Muster</h2>
-        <div class="button-container">
-          <button onclick="pulseLEDs()" class="accent">Pulsieren</button>
-        </div>
-      </div>
-      <div class="card">
-        <h2>LED-Farbe</h2>
-        <div class="color-selection">
-            <p>Wähle eine Farbe:</p>
-            <div class="color-buttons">
-                <button onclick="setColor('#ff0000')" class="color-btn" style="background-color: #ff0000;">Rot</button>
-                <button onclick="setColor('#00ff00')" class="color-btn" style="background-color: #00ff00;">Grün</button>
-                <button onclick="setColor('#0000ff')" class="color-btn" style="background-color: #0000ff;">Blau</button>
-                <button onclick="setColor('#ffff00')" class="color-btn" style="background-color: #ffff00;">Gelb</button>
-                <button onclick="setColor('#ff00ff')" class="color-btn" style="background-color: #ff00ff;">Pink</button>
-                <button onclick="setColor('#00ffff')" class="color-btn" style="background-color: #00ffff;">Cyan</button>
-                <button onclick="setColor('#ffffff')" class="color-btn" style="background-color: #ffffff; color: #333; border: 1px solid #ddd;">Weiß</button>
-                <button onclick="setColor('#ffa500')" class="color-btn" style="background-color: #ffa500;">Orange</button>
-                <button onclick="setColor('#800080')" class="color-btn" style="background-color: #800080;">Lila</button>
-            </div>
-        </div>
-      </div>
-<div class="card">
-    <h2>Farbwechsel</h2>
-    <div class="color-control">
-        <div class="color-buttons">
-            <button onclick="setAmplitudeColor('#ff0000')" class="color-btn" style="background-color: #ff0000;">Rot</button>
-            <button onclick="setAmplitudeColor('#00ff00')" class="color-btn" style="background-color: #00ff00;">Grün</button>
-            <button onclick="setAmplitudeColor('#0000ff')" class="color-btn" style="background-color: #0000ff;">Blau</button>
-            <button onclick="setAmplitudeColor('#ffff00')" class="color-btn" style="background-color: #ffff00;">Gelb</button>
-            <button onclick="setAmplitudeColor('#ff00ff')" class="color-btn" style="background-color: #ff00ff;">Pink</button>
-            <button onclick="setAmplitudeColor('#00ffff')" class="color-btn" style="background-color: #00ffff;">Cyan</button>
-            <button onclick="setAmplitudeColor('#ffffff')" class="color-btn" style="background-color: #ffffff; color: #333; border: 1px solid #ddd;">Weiß</button>
-            <button onclick="setAmplitudeColor('#ffa500')" class="color-btn" style="background-color: #ffa500;">Orange</button>
-            <button onclick="setAmplitudeColor('#800080')" class="color-btn" style="background-color: #800080;">Lila</button>
-        </div>
-        <div class="color-control">
-            <label for="amplitudeColorPicker">Oder wählen Sie eine benutzerdefinierte Farbe:</label>
-            <input type="color" id="amplitudeColorPicker">
-            <button onclick="setCustomAmplitudeColor()">Benutzerdefinierte Farbe</button>
-        </div>
-    </div>
-</div>
-
-
       </div>
       <div id="status" class="status">Bereit</div>
     </div>
-    <!-- JavaScript einbinden -->
-    <script src="/static/js/script.js"></script>
-  </body>
+      </body>
 </html>

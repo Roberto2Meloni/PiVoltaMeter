@@ -22,7 +22,7 @@ LED_STRIP_TWO_MAX_COUNT = LED_PER_STRIP  # Maximale Anzahl der LEDs in der Start
 
 
 # Initialisierung der LED-Streifen
-strip_one = PixelStrip(LED_STRIP_ONE_MAX_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL_ONE)
+strip_one = PixelStrip(LED_STRIP_ONE_MAX_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA_ONE, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL_ONE)
 strip_two = PixelStrip(LED_STRIP_TWO_MAX_COUNT, LED_PIN_TWO, LED_FREQ_HZ, LED_DMA_TWO, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL_TWO)
 strip_one.begin()
 strip_two.begin()  # Strip zwei starten
