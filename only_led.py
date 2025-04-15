@@ -163,8 +163,8 @@ def start_phase_three():
 
 def start_all_start_phase():
     start_phase_one()
-    start_phase_two()
-    start_phase_three()
+    # start_phase_two()
+    # start_phase_three()
 
 
 def animation_webserver_starting(iterations=1):
@@ -357,7 +357,6 @@ def hsv_to_rgb(h, s, v):
         return t, p, v
     else:
         return v, p, q
-
 
 def audio_visualizer():
     # Audio-Parameter
