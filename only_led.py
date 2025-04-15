@@ -10,7 +10,7 @@ LED_PER_STRIP = 10
 LED_PIN = 18          # GPIO-Pin (18 = PWM0)
 LED_PIN_TWO = 13      # GPIO-Pin für zweiten Strip (13 = PWM1)
 LED_FREQ_HZ = 800000  # LED-Signalfrequenz
-LED_DMA = 10          # DMA-Kanal für ersten Strip
+LED_DMA_ONE = 10          # DMA-Kanal für ersten Strip
 LED_DMA_TWO = 11      # DMA-Kanal für zweiten Strip
 LED_BRIGHTNESS = 50   # Helligkeit (0-255)
 LED_INVERT = False    # Signal invertieren

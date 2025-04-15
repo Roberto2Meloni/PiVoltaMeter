@@ -14,7 +14,7 @@ class BaseLEDController:
         # Initialisiere LED-Streifen
         self.strip_one = PixelStrip(
             self.config.LED_PER_STRIP, 
-            self.config.LED_PIN, 
+            self.config.LED_PIN_ONE, 
             self.config.LED_FREQ_HZ, 
             self.config.LED_DMA, 
             self.config.LED_INVERT, 
