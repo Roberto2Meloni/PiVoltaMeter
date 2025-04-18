@@ -58,7 +58,10 @@ class LEDManager:
         self.pattern_visualizer.clear_leds()
     
     def handle_config_change(self):
-        # Bei Konfigurationsänderungen reagieren
+        """Reagiert auf Konfigurationsänderungen"""
+        # Übergangsanimation abspielen
+        self.pattern_visualizer.play_transition_animation()
+        
         if self.current_mode != Config.VISUALIZATION_MODE:
             # Modus hat sich geändert, Visualisierung neu starten
             self.start_visualization()

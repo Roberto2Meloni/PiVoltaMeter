@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, jsonify
 import only_led
 from rpi_ws281x import Color
+# Im Flask-Server oder beim Start deiner Anwendung
+
 
 # Importieren Sie die Konfiguration
 from config.config import Config
