@@ -62,7 +62,13 @@ def set_visualization_mode():
         
         return jsonify({
             "status": "success", 
-            "message": f"Visualisierungs Modus umgestellt auf {new_mode}"
+            "message": f"Visualisierungs Modus umgestellt auf {new_mode}",
+            "config": {
+                "visualization_mode": display_mode,
+                "amplitude_color": Config.FIXED_AMPLITUDE_COLOR,
+                "led_brightness": Config.LED_BRIGHTNESS
+                # Fügen Sie hier weitere Config-Werte hinzu, die Sie benötigen
+            }
         })
     else:
         return jsonify({
