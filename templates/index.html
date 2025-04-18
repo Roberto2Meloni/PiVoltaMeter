@@ -12,13 +12,29 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
   </head>
-  <body>
+<body>
     <header>
       <h1><i class="fas fa-bolt"></i> PiVoltMeter</h1>
       <p class="subtitle">LED-Visualisierung</p>
     </header>
-
     <div class="container">
+       <!-- Neue Status-Kachel am Anfang -->
+      <div class="card">
+        <div class="status-title">
+          <i class="fas fa-info-circle"></i> Systemstatus
+        </div>
+        <div class="status-container">
+          <div class="status-item">
+            <i class="fas fa-sliders-h"></i> Modus: <span id="current-mode">Audio</span>
+          </div>
+          <div class="status-item">
+            <i class="fas fa-fill-drip"></i> Farbe: <span id="current-color">Regenbogen</span>
+          </div>
+          <div class="status-item">
+            <i class="fas fa-shapes"></i> Muster: <span id="current-pattern">Spektrum</span>
+          </div>
+        </div>
+      </div>
       <div class="card">
         <h2><i class="fas fa-sliders-h"></i> Visualisierungsmodus</h2>
         <div class="visualization-controls">
@@ -30,10 +46,10 @@
             <i class="fas fa-music"></i> Audio
           </button>
           <button
-            id="pattern-mode"
-            onclick="setVisualizationMode('pattern', '{{ url_for('set_visualization_mode') }}')"
+            id="static-mode"
+            onclick="setVisualizationMode('static', '{{ url_for('set_visualization_mode') }}')"
           >
-            <i class="fas fa-palette"></i> Pattern
+            <i class="fas fa-palette"></i> Statisch
           </button>
           <button
             id="off-mode"
@@ -43,43 +59,63 @@
           </button>
         </div>
       </div>
-
-      <div id="current-status" class="status">
-        <i class="fas fa-info-circle"></i> Aktueller Modus: <span id="current-mode">Audio</span>
+      
+      <!-- Neue Kachel für Farbauswahl -->
+      <div id="color-container" class="card">
+        <h2><i class="fas fa-fill-drip"></i> Farbauswahl</h2>
+        <div class="color-controls">
+          <button id="color_rainbow" onclick="setColor('rainbow', '{{ url_for('set_color') }}')" class="color-btn active" style="background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet);">
+            <i class="fas fa-rainbow"></i> Regenbogen
+          </button>
+          <button id="color_green" onclick="setColor('green', '{{ url_for('set_color') }}')" class="color-btn" style="background-color: #2ecc71;">
+            <i class="fas fa-leaf"></i> Grün
+          </button>
+          <button id="color_blue" onclick="setColor('blue', '{{ url_for('set_color') }}')" class="color-btn" style="background-color: #3498db;">
+            <i class="fas fa-tint"></i> Blau
+          </button>
+          <button id="color_red" onclick="setColor('red', '{{ url_for('set_color') }}')" class="color-btn" style="background-color: #e74c3c;">
+            <i class="fas fa-fire"></i> Rot
+          </button>
+          <button id="color_purple" onclick="setColor('purple', '{{ url_for('set_color') }}')" class="color-btn" style="background-color: #9b59b6;">
+            <i class="fas fa-magic"></i> Lila
+          </button>
+          <button id="color_yellow" onclick="setColor('yellow', '{{ url_for('set_color') }}')" class="color-btn" style="background-color: #f1c40f;">
+            <i class="fas fa-sun"></i> Gelb
+          </button>
+        </div>
       </div>
-      <br />
-
+      
       <div id="pattern-container" class="card">
         <h2><i class="fas fa-sliders-h"></i> Muster</h2>
         
         <!-- Audiomodus-Muster -->
         <div id="audio-patterns" class="pattern-group">
           <div class="visualization-controls">
-            <button id="audio-pattern-1" onclick="setPattern('audio-pattern-1')" class="pattern-btn active">
+            <button id="audio_pattern_01" onclick="setPattern('audio_pattern_01', '{{ url_for('set_pattern_per_mode') }}')" class="pattern-btn active">
               <i class="fas fa-wave-square"></i> Spektrum
             </button>
-            <button id="audio-pattern-2" onclick="setPattern('audio-pattern-2')" class="pattern-btn">
+            <button id="audio_pattern_02" onclick="setPattern('audio_pattern_02', '{{ url_for('set_pattern_per_mode') }}')" class="pattern-btn">
               <i class="fas fa-volume-up"></i> Equalizer
             </button>
-            <button id="audio-pattern-3" onclick="setPattern('audio-pattern-3')" class="pattern-btn">
+            <button id="audio_pattern_03" onclick="setPattern('audio_pattern_03', '{{ url_for('set_pattern_per_mode') }}')" class="pattern-btn">
               <i class="fas fa-drum"></i> Beat
             </button>
           </div>
         </div>
         
-        <!-- Pattern-Modus-Muster -->
-        <div id="pattern-patterns" class="pattern-group" style="display: none;">
+        <!-- Static-Modus-Muster -->
+        <div id="static-patterns" class="pattern-group" style="display: none;">
           <div class="visualization-controls">
-            <button id="pattern-1" onclick="setPattern('pattern-1')" class="pattern-btn">
+            <button id="static_pattern_01" onclick="setPattern('static_pattern_01', '{{ url_for('set_pattern_per_mode') }}')" class="pattern-btn">
               <i class="fas fa-fire"></i> Feuer
             </button>
-            <button id="pattern-2" onclick="setPattern('pattern-2')" class="pattern-btn">
+            <button id="static_pattern_02" onclick="setPattern('static_pattern_02', '{{ url_for('set_pattern_per_mode') }}')" class="pattern-btn">
               <i class="fas fa-water"></i> Wasser
             </button>
-            <button id="pattern-3" onclick="setPattern('pattern-3')" class="pattern-btn">
+            <button id="static_pattern_03" onclick="setPattern('static_pattern_03', '{{ url_for('set_pattern_per_mode') }}')" class="pattern-btn">
               <i class="fas fa-rainbow"></i> Regenbogen
             </button>
-            <button id="pattern-4" onclick="setPattern('pattern-4')" class="pattern-btn">
+            <button id="static_pattern_04" onclick="setPattern('static_pattern_04', '{{ url_for('set_pattern_per_mode') }}')" class="pattern-btn">
               <i class="fas fa-wind"></i> Welle
             </button>
           </div>
@@ -92,12 +128,14 @@
           </div>
         </div>
       </div>
-
-      <div id="status" class="status">
-        <i class="fas fa-info-circle"></i> System bereit
-      </div>
     </div>
-
+    
+    <!-- Vorgeladene Konfigurationsdaten -->
+    <script>
+      // Die vom Server übergebene Konfiguration
+      const initialConfig = {{ config|tojson|safe }};
+    </script>
+    
     <!-- Statischer Link für lokale Entwicklung -->
     <script src="/static/js/script.js"></script>
   </body>

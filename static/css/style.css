@@ -41,10 +41,11 @@ h2 {
     border-bottom: 1px solid #eee;
     padding-bottom: 0.8rem;
 }
-.visualization-controls {
+.visualization-controls, .color-controls {
     display: flex;
     gap: 1rem;
     margin-top: 1.2rem;
+    flex-wrap: wrap;
 }
 button {
     display: inline-block;
@@ -98,12 +99,68 @@ button.active::after {
     border-radius: 4px;
     font-size: 0.95rem;
     transition: all 0.3s ease;
+    margin-bottom: 0.5rem;
 }
 i {
     margin-right: 0.3rem;
 }
 
-/* Neue Stile für Muster */
+/* Neue Stile für Statusbereich */
+.status-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.status-container .status:nth-child(1) {
+    border-left-color: #3498db; /* Blau für Modus */
+}
+
+.status-container .status:nth-child(2) {
+    border-left-color: #e74c3c; /* Rot für Farbe */
+}
+
+.status-container .status:nth-child(3) {
+    border-left-color: #2ecc71; /* Grün für Muster */
+}
+
+#current-mode,
+#current-color,
+#current-pattern {
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+/* Neue Stile für Farbauswahl */
+.color-controls {
+    justify-content: center;
+}
+
+.color-btn {
+    flex: 0 0 calc(33.333% - 1rem);
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    border: 2px solid transparent;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.color-btn:hover {
+    transform: scale(1.05);
+    border: 2px solid #fff;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.color-btn.active {
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 2px #3498db;
+}
+
+.color-btn.active::after {
+    background-color: #e74c3c;
+}
+
+/* Muster-Stile */
 .pattern-group {
     transition: all 0.3s ease;
 }
@@ -130,7 +187,7 @@ i {
 
 /* Medienabfragen für responsive Anpassungen */
 @media (max-width: 600px) {
-    .visualization-controls {
+    .visualization-controls, .color-controls {
         flex-direction: column;
     }
     button {
@@ -140,5 +197,9 @@ i {
         top: 50%;
         right: 10px;
         transform: translateY(-50%);
+    }
+    
+    .color-btn {
+        flex: 1 1 100%;
     }
 }

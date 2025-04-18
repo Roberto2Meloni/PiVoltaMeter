@@ -11,12 +11,118 @@ visualization_thread = None
 
 app = Flask(__name__)
 
-
-
 @app.route('/')
 def index():
-    """Startseite des Webservers"""
-    return render_template('index.html')
+    """Startseite des Webservers mit vorgeladener Konfiguration"""
+    # Hole die aktuelle Konfiguration
+    config_json = Config.to_json()
+    
+    # Übergebe die Konfiguration als Variable an das Template
+    return render_template('index.html', config=config_json)
+
+
+@app.route('/set_visualization_mode', methods=['POST'])
+def set_visualization_mode():
+    data = request.get_json()
+    current_mode = Config.VISUALIZATION_MODE
+    new_mode = data.get('mode', 'audio') # sollte kein 'mode' gesendet werden, verwende 'audio' als Standartwert
+
+    print(f"Aktueller modus: {current_mode}")
+    print(f"Empfangener modus: {new_mode}")
+
+    # Validieren und umstellen des Modus
+    if new_mode in ['audio', 'static', 'off']:
+        Config.set_visualization_mode(new_mode)
+        
+        # Vollständige Konfiguration zurückgeben
+        return jsonify({
+            "status": "success", 
+            "message": f"Visualisierungs Modus umgestellt auf {new_mode}",
+            "config": Config.to_json()
+        })
+    else:
+        return jsonify({
+            "status": "error", 
+            "message": f"Ungültiger Modus: {new_mode}. Erlaubte Modi: audio, pattern, off"
+        }), 400
+
+@app.route('/set_pattern_per_mode', methods=['POST'])
+def set_pattern_per_mode():
+    data = request.get_json()
+    new_pattern = data.get('pattern')
+    current_mode = Config.VISUALIZATION_MODE
+    
+    # Ermittle aktuelles Muster für Debugging
+    if current_mode == 'audio':
+        current_pattern = Config.AUDIO_PATTERN
+    elif current_mode == 'static':
+        current_pattern = Config.STATIC_PATTERN
+    else:
+        current_pattern = "off"
+
+    # Debug-Ausgaben
+    print(f"Aktuelles Muster: {current_pattern}")
+    print(f"Empfangenes Muster: {new_pattern}")
+
+    # Muster-Update versuchen
+    try:
+        if new_pattern:
+            Config.set_pattern_per_mode(new_pattern)
+            
+            # Hole das aktualisierte Muster zur Bestätigung
+            if current_mode == 'audio':
+                updated_pattern = Config.AUDIO_PATTERN
+                pattern_name = new_pattern.replace('audio_pattern_', 'Audio-Muster ')
+            elif current_mode == 'static':
+                updated_pattern = Config.STATIC_PATTERN
+                pattern_name = new_pattern.replace('static_pattern_', 'Statisches Muster ')
+            else:
+                updated_pattern = "off"
+                pattern_name = "Aus"
+                
+            # Erfolgsantwort mit vollständiger Konfiguration
+            return jsonify({
+                "status": "success",
+                "message": f"Muster erfolgreich auf {pattern_name} umgestellt",
+                "config": Config.to_json()
+            })
+        else:
+            return jsonify({
+                "status": "error",
+                "message": "Kein Muster angegeben"
+            }), 400
+    except ValueError as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 400
+
+@app.route('/set_color', methods=['POST'])
+def set_color():
+    data = request.get_json()
+    color = data.get('color', 'rainbow')
+    
+    # Hier die Farbe im Config-Objekt speichern
+    Config.LED_COLOR = color
+    
+    # Vollständige Konfiguration zurückgeben
+    return jsonify({
+        "status": "success",
+        "message": f"Farbe auf {color} umgestellt",
+        "config": Config.to_json()
+    })
+
+# Neue Route zum direkten Abrufen der aktuellen Konfiguration
+@app.route('/get_current_config', methods=['GET'])
+def get_current_config():
+    """
+    Gibt die aktuelle Konfiguration als JSON zurück.
+    Dies ist nützlich für die Initialisierung der Weboberfläche.
+    """
+    return jsonify({
+        "status": "success",
+        "config": Config.to_json()
+    })
 
 # @app.route('/sequence_one')
 # def sequence_one():
@@ -42,84 +148,55 @@ def index():
 #     only_led.start_all_start_phase()
 #     return jsonify({"status": "success", "message": "Alle Sequenzen ausgeführt"})
 
-@app.route('/set_visualization_mode', methods=['POST'])
-def set_visualization_mode():
-    data = request.get_json()
-    current_mode = Config.VISUALIZATION_MODE
-    new_mode = data.get('mode', 'audio')
+
+
+# @app.route('/set_color', methods=['POST'])
+# def set_color():
+#     """Setzt alle LEDs auf eine bestimmte Farbe"""
+#     global current_visualizer, visualization_thread
     
-    # debug
-    print(f"Aktueller modus: {current_mode}")
-    print(f"Empfangener modus: {new_mode}")
-
-    # Validieren und umstellen des Modus
-    if new_mode in ['audio', 'pattern', 'off']:
-        Config.set_visualization_mode(new_mode)
-        
-        return jsonify({
-            "status": "success", 
-            "message": f"Visualisierungs Modus umgestellt auf {new_mode}",
-            "config": {
-                "visualization_mode": new_mode,
-                "amplitude_color": Config.FIXED_AMPLITUDE_COLOR,
-                "led_brightness": Config.LED_BRIGHTNESS
-                # Fügen Sie hier weitere Config-Werte hinzu, die Sie benötigen
-            }
-        })
-    else:
-        return jsonify({
-            "status": "error", 
-            "message": f"Ungültiger Modus: {new_mode}. Erlaubte Modi: audio, pattern, off"
-        }), 400
-
-
-@app.route('/set_color', methods=['POST'])
-def set_color():
-    """Setzt alle LEDs auf eine bestimmte Farbe"""
-    global current_visualizer, visualization_thread
-    
-    try:
-        # Beende aktuelle Visualisierung, falls vorhanden
-        if current_visualizer:
-            if hasattr(current_visualizer, 'stop_visualization'):
-                current_visualizer.stop_visualization()
+#     try:
+#         # Beende aktuelle Visualisierung, falls vorhanden
+#         if current_visualizer:
+#             if hasattr(current_visualizer, 'stop_visualization'):
+#                 current_visualizer.stop_visualization()
             
-            current_visualizer = None
+#             current_visualizer = None
         
-        if visualization_thread and visualization_thread.is_alive():
-            visualization_thread.join(timeout=2)
+#         if visualization_thread and visualization_thread.is_alive():
+#             visualization_thread.join(timeout=2)
         
-        # Setze Modus auf Statisch
-        Config.set_visualization_mode('static')
+#         # Setze Modus auf Statisch
+#         Config.set_visualization_mode('static')
         
-        # Hole Farbwert aus JSON-Anfrage
-        data = request.get_json()
-        color = data.get('color', '#3498db')  # Standardfarbe ist Blau
+#         # Hole Farbwert aus JSON-Anfrage
+#         data = request.get_json()
+#         color = data.get('color', '#3498db')  # Standardfarbe ist Blau
         
-        # Hexwert in RGB-Komponenten umwandeln
-        color_hex = color.lstrip('#')
-        r = int(color_hex[0:2], 16)
-        g = int(color_hex[2:4], 16)
-        b = int(color_hex[4:6], 16)
+#         # Hexwert in RGB-Komponenten umwandeln
+#         color_hex = color.lstrip('#')
+#         r = int(color_hex[0:2], 16)
+#         g = int(color_hex[2:4], 16)
+#         b = int(color_hex[4:6], 16)
         
-        # Alle LEDs auf die gewählte Farbe setzen
-        for i in range(only_led.LED_PER_STRIP):
-            only_led.strip_one.setPixelColor(i, Color(r, g, b))
-            only_led.strip_two.setPixelColor(i, Color(r, g, b))
+#         # Alle LEDs auf die gewählte Farbe setzen
+#         for i in range(only_led.LED_PER_STRIP):
+#             only_led.strip_one.setPixelColor(i, Color(r, g, b))
+#             only_led.strip_two.setPixelColor(i, Color(r, g, b))
         
-        only_led.strip_one.show()
-        only_led.strip_two.show()
+#         only_led.strip_one.show()
+#         only_led.strip_two.show()
         
-        return jsonify({
-            "status": "success", 
-            "message": f"LEDs auf Farbe {color} gesetzt"
-        })
+#         return jsonify({
+#             "status": "success", 
+#             "message": f"LEDs auf Farbe {color} gesetzt"
+#         })
     
-    except Exception as e:
-        return jsonify({
-            "status": "error", 
-            "message": f"Fehler beim Setzen der Farbe: {str(e)}"
-        }), 500
+#     except Exception as e:
+#         return jsonify({
+#             "status": "error", 
+#             "message": f"Fehler beim Setzen der Farbe: {str(e)}"
+#         }), 500
 
 # @app.route('/turn_off', methods=['POST'])
 # def turn_off():
