@@ -54,17 +54,13 @@ def set_visualization_mode():
 
     # Validieren und umstellen des Modus
     if new_mode in ['audio', 'pattern', 'off']:
-        if new_mode == 'off':
-            # Das System erwartet möglicherweise 'static' statt 'off'
-            Config.set_visualization_mode('static')
-        else:
-            Config.set_visualization_mode(new_mode)
+        Config.set_visualization_mode(new_mode)
         
         return jsonify({
             "status": "success", 
             "message": f"Visualisierungs Modus umgestellt auf {new_mode}",
             "config": {
-                "visualization_mode": display_mode,
+                "visualization_mode": new_mode,
                 "amplitude_color": Config.FIXED_AMPLITUDE_COLOR,
                 "led_brightness": Config.LED_BRIGHTNESS
                 # Fügen Sie hier weitere Config-Werte hinzu, die Sie benötigen

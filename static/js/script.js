@@ -1,41 +1,102 @@
 console.log("Script wurde geladen");
 
-// Funktion zum Umschalten des Visualisierungsmodus
+// Visualisierungsmodus einstellen
 function setVisualizationMode(mode, url) {
-  console.log(`Wechsle visualisierungsmodus zu: ${mode}`);
-
-  // Aktive Klasse von allen Buttons entfernen
-  document.querySelectorAll(".visualization-controls button").forEach((btn) => {
-    btn.classList.remove("active");
-  });
-
-  // Aktive Klasse zum ausgewählten Button hinzufügen
-  document.getElementById(mode + "-mode").classList.add("active");
-
-  // Status aktualisieren
-  document.getElementById("status").innerHTML =
-    '<i class="fas fa-sync fa-spin"></i> Wechsle zu Modus: ' + mode;
-
-  // API-Aufruf zum Ändern des Modus
-  fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ mode: mode }),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      document.getElementById("status").innerHTML =
-        '<i class="fas fa-check-circle"></i> ' + data.message;
-    })
-    .catch((error) => {
-      document.getElementById("status").innerHTML =
-        '<i class="fas fa-exclamation-triangle"></i> Fehler beim Umschalten des Modus';
-      console.error("Fehler:", error);
+    // Entferne aktiven Status von allen Modus-Buttons
+    document.querySelectorAll('#audio-mode, #pattern-mode, #off-mode').forEach(btn => {
+        btn.classList.remove('active');
     });
+
+    // Füge aktiven Status zum ausgewählten Button hinzu
+    document.getElementById(mode + '-mode').classList.add('active');
+
+    // Aktualisiere Status-Anzeige
+    const modeText = mode === 'audio' ? 'Audio' : mode === 'pattern' ? 'Pattern' : 'Aus';
+    document.getElementById('current-mode').textContent = modeText;
+
+    // Mustergruppen anzeigen/verstecken basierend auf Modus
+    document.querySelectorAll('.pattern-group').forEach(group => {
+        group.style.display = 'none';
+    });
+
+    if (mode === 'off') {
+        document.getElementById('off-info').style.display = 'block';
+    } else {
+        document.getElementById(mode + '-patterns').style.display = 'block';
+        
+        // Setze ersten Pattern-Button als aktiv, wenn Modus wechselt
+        const patternButtons = document.querySelectorAll('#' + mode + '-patterns .pattern-btn');
+        if (patternButtons.length > 0) {
+            patternButtons.forEach(btn => btn.classList.remove('active'));
+            patternButtons[0].classList.add('active');
+        }
+    }
+
+    // Statusmeldung aktualisieren
+    document.getElementById('status').innerHTML = '<i class="fas fa-info-circle"></i> Modus auf ' + modeText + ' gesetzt';
+
+    // Optional: Sende Anfrage an Backend, um den Modus zu ändern
+    if (url) {
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ mode: mode })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Modus erfolgreich geändert');
+            } else {
+                console.error('Fehler beim Ändern des Modus:', data.message);
+                document.getElementById('status').innerHTML = '<i class="fas fa-exclamation-triangle"></i> Fehler: ' + data.message;
+            }
+        })
+        .catch(error => {
+            console.error('Netzwerkfehler:', error);
+            document.getElementById('status').innerHTML = '<i class="fas fa-exclamation-triangle"></i> Netzwerkfehler beim Ändern des Modus';
+        });
+    }
 }
 
+// Muster einstellen
+function setPattern(patternId) {
+    // Aktiven Status von allen Muster-Buttons im aktuellen Modus entfernen
+    const activeMode = document.querySelector('#audio-mode, #pattern-mode, #off-mode.active').id.replace('-mode', '');
+    
+    if (activeMode !== 'off') {
+        document.querySelectorAll('#' + activeMode + '-patterns .pattern-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // Aktiven Status zum ausgewählten Muster hinzufügen
+        document.getElementById(patternId).classList.add('active');
+        
+        // Hole den Musternamen für die Statusanzeige
+        const patternName = document.getElementById(patternId).textContent.trim();
+        
+        // Statusmeldung aktualisieren
+        document.getElementById('status').innerHTML = '<i class="fas fa-info-circle"></i> Muster auf ' + patternName + ' gesetzt';
+        
+        // Optional: Sende Anfrage an Backend
+        // Diese Zeile kannst du nach deinen Bedürfnissen anpassen
+        // fetch('/set_pattern', { ... })
+    }
+}
+
+// Initialisieren bei Seitenladung
+document.addEventListener('DOMContentLoaded', function() {
+    // Setze standardmäßig Audio-Modus als aktiv
+    setVisualizationMode('audio');
+    
+    // Setze ersten Audio-Pattern-Button als aktiv
+    const audioPatternButtons = document.querySelectorAll('#audio-patterns .pattern-btn');
+    if (audioPatternButtons.length > 0) {
+        audioPatternButtons.forEach(btn => btn.classList.remove('active'));
+        audioPatternButtons[0].classList.add('active');
+    }
+});
 // function updateStatus(message, status = "loading") {
 //   const statusDiv = document.getElementById("status");
 //   statusDiv.textContent = message;
