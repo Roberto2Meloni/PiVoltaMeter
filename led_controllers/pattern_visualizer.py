@@ -1,146 +1,158 @@
 import colorsys
 import time
 import random
-from .base_controller import BaseLEDController
+import math
 from rpi_ws281x import Color
 from config.config import Config
+from led_controllers.base_controller import BaseLEDController
 
 class PatternVisualizer(BaseLEDController):
-    def __init__(self, config=None):
-        """
-        Initialisiert den Muster-Visualisierer
+    def __init__(self):
+        """Initialisiert den Pattern-Visualizer"""
+        super().__init__()
         
-        :param config: Konfigurationsobjekt (optional)
+        # Interne Zustände für Animationen
+        self._animation_step = 0
+        self._last_update_time = time.time()
+    
+    def update(self):
         """
-        super().__init__(config)
-        self.config = config or Config
-        self.current_pattern = self.config.DEFAULT_PATTERN
-
-    def rainbow_cycle(self, wait_ms=20, iterations=5):
+        Aktualisiert die LED-Anzeige basierend auf dem in der Config definierten Muster.
+        Diese Methode wird regelmäßig vom LED-Manager aufgerufen.
         """
-        Regenbogen-Laufeffekt
+        # Bestimme das aktuelle Muster aus der Config
+        pattern = Config.STATIC_PATTERN
         
-        :param wait_ms: Wartezeit zwischen Farbschritten
-        :param iterations: Anzahl der Durchläufe
-        """
-        for j in range(256 * iterations):
-            for i in range(self.config.LED_PER_STRIP):
-                # Berechne Farbton basierend auf der LED-Position
-                color = self._wheel((int(i * 256 / self.config.LED_PER_STRIP) + j) & 255)
-                
-                # Setze Farbe für beide Streifen
-                self.strip_one.setPixelColor(i, color)
-                self.strip_two.setPixelColor(i, color)
-            
-            # Aktualisiere LED-Streifen
-            self.strip_one.show()
-            self.strip_two.show()
-            
-            # Kleine Verzögerung
-            time.sleep(wait_ms / 1000.0)
-
-    def random_color_chase(self, iterations=5):
-        """
-        Zufällige Farbverfolgung
-        
-        :param iterations: Anzahl der Durchläufe
-        """
-        for _ in range(iterations):
-            # Zufällige Farbe für den aktuellen Durchlauf
-            color = self._random_color()
-            
-            # LED für LED durchlaufen
-            for i in range(self.config.LED_PER_STRIP):
-                # Alle LEDs ausschalten
-                self.clear_leds()
-                
-                # Aktuelle LED und benachbarte LEDs mit Farbe setzen
-                for j in range(max(0, i-1), min(self.config.LED_PER_STRIP, i+2)):
-                    self.strip_one.setPixelColor(j, color)
-                    self.strip_two.setPixelColor(j, color)
-                
-                # Anzeigen und kurz warten
-                self.strip_one.show()
-                self.strip_two.show()
-                time.sleep(0.1)
-
-    def theater_chase(self, color=None, wait_ms=50, iterations=10):
-        """
-        Theater-Chase-Effekt
-        
-        :param color: Farbe für den Effekt (None für zufällige Farbe)
-        :param wait_ms: Wartezeit zwischen Schritten
-        :param iterations: Anzahl der Durchläufe
-        """
-        # Zufällige Farbe, wenn keine übergeben wurde
-        if color is None:
-            color = self._random_color()
-        
-        for _ in range(iterations):
-            for q in range(3):
-                for i in range(0, self.config.LED_PER_STRIP, 3):
-                    # Nur jede dritte LED beleuchten
-                    pos = i + q
-                    if pos < self.config.LED_PER_STRIP:
-                        self.strip_one.setPixelColor(pos, color)
-                        self.strip_two.setPixelColor(pos, color)
-                
-                # Anzeigen
-                self.strip_one.show()
-                self.strip_two.show()
-                time.sleep(wait_ms / 1000.0)
-                
-                # Alle LEDs ausschalten
-                self.clear_leds()
-
-    def start_pattern(self, pattern_name=None):
-        """
-        Startet ein bestimmtes LED-Muster
-        
-        :param pattern_name: Name des Musters (None für Standardmuster)
-        """
-        # Verwende Standardmuster, wenn keiner angegeben wurde
-        pattern_name = pattern_name or self.config.DEFAULT_PATTERN
-        
-        # Wähle Muster basierend auf dem Namen
-        patterns = {
-            'rainbow': self.rainbow_cycle,
-            'random_chase': self.random_color_chase,
-            'theater_chase': self.theater_chase
-        }
-        
-        # Muster ausführen
-        if pattern_name in patterns:
-            self.current_pattern = pattern_name
-            patterns[pattern_name]()
+        # Aktualisiere Animation basierend auf dem Muster
+        if pattern == 'static_pattern_01':
+            self._visualize_fire()
+        elif pattern == 'static_pattern_02':
+            self._visualize_water()
+        elif pattern == 'static_pattern_03':
+            self._visualize_rainbow()
+        elif pattern == 'static_pattern_04':
+            self._visualize_wave()
         else:
-            raise ValueError(f"Unbekanntes Muster: {pattern_name}")
-
-    def _wheel(self, pos):
+            # Fallback: Einfach die gewählte Farbe anzeigen
+            self._visualize_solid_color()
+    
+    def configure_from_config(self):
         """
-        Generiert Regenbogenfarben für Wheel-Effekte
+        Konfiguriert den Controller basierend auf der aktuellen Config.
+        Diese Methode wird aufgerufen, wenn sich die Konfiguration ändert.
+        """
+        # Helligkeit setzen
+        brightness = Config.LED_BRIGHTNESS
+        self.strip_one.setBrightness(brightness)
+        self.strip_two.setBrightness(brightness)
         
-        :param pos: Position im Farbkreis (0-255)
-        :return: Color-Objekt
+        # Andere Parameter aus der Config übernehmen
+        self._animation_step = 0  # Animationen zurücksetzen
+    
+    def cleanup(self):
         """
-        # Farbkreis-Logik für Regenbogeneffekte
-        if pos < 85:
-            return Color(pos * 3, 255 - pos * 3, 0)
-        elif pos < 170:
-            pos -= 85
-            return Color(255 - pos * 3, 0, pos * 3)
+        Bereinigt Ressourcen und bereitet den Controller auf das Beenden vor.
+        """
+        self.clear_all_leds()
+    
+    # Hilfsmethoden für die Musterimplementierung
+    def _get_color_from_config(self):
+        """
+        Gibt die in der Config konfigurierte Farbe zurück.
+        """
+        color_name = Config.LED_COLOR.lower()
+        
+        if color_name == 'rainbow':
+            # Regenbogenfarben werden in den spezifischen Visualisierungen behandelt
+            return Color(255, 255, 255)  # Weiß als Fallback
+        elif color_name == 'red':
+            return Color(255, 0, 0)
+        elif color_name == 'green':
+            return Color(0, 255, 0)
+        elif color_name == 'blue':
+            return Color(0, 0, 255)
+        elif color_name == 'purple':
+            return Color(128, 0, 128)
+        elif color_name == 'yellow':
+            return Color(255, 255, 0)
         else:
-            pos -= 170
-            return Color(0, pos * 3, 255 - pos * 3)
-
-    def _random_color(self):
+            return Color(255, 255, 255)  # Weiß als Fallback
+    
+    def clear_all_leds(self):
         """
-        Generiert eine zufällige Farbe
+        Schaltet alle LEDs aus.
+        """
+        print("SChallte allte LED' saus")
+        for i in range(Config.LED_PER_STRIP):
+            self.strip_one.setPixelColor(i, Color(0, 0, 0))
+            self.strip_two.setPixelColor(i, Color(0, 0, 0))
         
-        :return: Color-Objekt
+        self.strip_one.show()
+        self.strip_two.show()
+    
+    # Musterimplementierungen - zunächst als Platzhalter
+    def _visualize_solid_color(self):
         """
-        return Color(
-            random.randint(0, 255),
-            random.randint(0, 255),
-            random.randint(0, 255)
-        )
+        Zeigt eine Volltonfarbe auf allen LEDs an.
+        """
+        color = self._get_color_from_config()
+        
+        for i in range(Config.LED_PER_STRIP):
+            self.strip_one.setPixelColor(i, color)
+            self.strip_two.setPixelColor(i, color)
+        
+        self.strip_one.show()
+        self.strip_two.show()
+    
+    def _visualize_fire(self):
+        """
+        Zeigt ein Feuer-Muster an.
+        """
+        # Platzhalter - wird später implementiert
+        pass
+    
+    def _visualize_water(self):
+        """
+        Zeigt ein Wasser-Muster an.
+        """
+        # Platzhalter - wird später implementiert
+        pass
+        
+    def _visualize_rainbow(self):
+        """
+        Zeigt ein animiertes Regenbogen-Muster an.
+        """
+        # Erhöhe den Animationsschritt für die nächste Aktualisierung
+        self._animation_step = (self._animation_step + 1) % 256
+        
+        for i in range(Config.LED_PER_STRIP):
+            # Berechne Farbton basierend auf der LED-Position und dem aktuellen Animationsschritt
+            position = (i * 256 // Config.LED_PER_STRIP + self._animation_step) % 256
+            
+            # Wandle Position in Regenbogenfarbe um
+            if position < 85:
+                color = Color(position * 3, 255 - position * 3, 0)
+            elif position < 170:
+                position -= 85
+                color = Color(255 - position * 3, 0, position * 3)
+            else:
+                position -= 170
+                color = Color(0, position * 3, 255 - position * 3)
+            
+            # Setze die Farbe für beide LED-Streifen
+            self.strip_one.setPixelColor(i, color)
+            self.strip_two.setPixelColor(i, color)
+        
+        # Aktualisiere die LED-Streifen
+        self.strip_one.show()
+        self.strip_two.show()
+        
+        # Kleine Pause für gleichmäßige Animation
+        time.sleep(0.02)
+    
+    def _visualize_wave(self):
+        """
+        Zeigt ein Wellenmuster an.
+        """
+        # Platzhalter - wird später implementiert
+        pass

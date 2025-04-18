@@ -1,5 +1,6 @@
 from rpi_ws281x import PixelStrip, Color
 from config.config import Config
+import time
 
 class BaseLEDController:
     def __init__(self, config=None):
@@ -35,10 +36,28 @@ class BaseLEDController:
         # Starte LED-Streifen
         self.strip_one.begin()
         self.strip_two.begin()
+        
+        # Alle LEDs initial ausschalten - verwende die tatsächliche Anzahl
+        self.clear_leds_with_margin()
+
+    def clear_leds_with_margin(self):
+        """
+        Schaltet alle LEDs aus und fügt einen Sicherheitspuffer hinzu,
+        um sicherzustellen, dass alle physischen LEDs erreicht werden.
+        """
+        # Anzahl der LEDs plus Sicherheitspuffer (z.B. 50%)
+        led_count_with_margin = int(self.config.LED_PER_STRIP * 1.5)
+        
+        for i in range(led_count_with_margin):
+            self.strip_one.setPixelColor(i, Color(0, 0, 0))
+            self.strip_two.setPixelColor(i, Color(0, 0, 0))
+        
+        self.strip_one.show()
+        self.strip_two.show()
 
     def clear_leds(self):
         """
-        Schaltet alle LEDs aus
+        Schaltet alle konfigurierten LEDs aus
         """
         for i in range(self.config.LED_PER_STRIP):
             self.strip_one.setPixelColor(i, Color(0, 0, 0))

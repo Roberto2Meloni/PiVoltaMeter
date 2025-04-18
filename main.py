@@ -11,34 +11,25 @@
 
 import threading
 from config.config import Config
-from led_controllers.audio_visualizer import AudioVisualizer
-from led_controllers.pattern_visualizer import PatternVisualizer
+from utils.led_manager import LEDManager
 from only_flask import start_flask_server
+import only_led
 
 def main():
     """Hauptfunktion des Programms"""
     print("Starte LED-Visualisierungssystem")
     
-    # LED-Start-Animation (kann später in eine separate Funktion ausgelagert werden)
-    from only_led import start_all_start_phase
-    start_all_start_phase()
-
-    # Visualisierungsmodus basierend auf Konfiguration wählen
-    if Config.VISUALIZATION_MODE == 'audio':
-        visualizer = AudioVisualizer()
-        # Starte Audio-Visualisierung in einem separaten Thread
-        audio_thread = threading.Thread(target=visualizer.start_visualization)
-        audio_thread.daemon = True
-        audio_thread.start()
-    elif Config.VISUALIZATION_MODE == 'pattern':
-        visualizer = PatternVisualizer()
-        # Starte Muster-Visualisierung in einem separaten Thread
-        pattern_thread = threading.Thread(target=visualizer.start_pattern)
-        pattern_thread.daemon = True
-        pattern_thread.start()
-
-    # Starte Flask-Webserver
-    start_flask_server()
+    # LED-Start-Animation
+    only_led.start_all_start_phase()
+    
+    # LED-Manager erstellen
+    led_manager = LEDManager()
+    
+    # Visualisierung starten
+    led_manager.start_visualization()
+    
+    # Flask-Server mit LED-Manager starten
+    start_flask_server(led_manager_instance=led_manager)
 
 if __name__ == "__main__":
     main()

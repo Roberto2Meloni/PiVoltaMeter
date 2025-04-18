@@ -1,189 +1,274 @@
-import pyaudio
-import numpy as np
+import time
+import random
 from rpi_ws281x import Color
-from .base_controller import BaseLEDController
 from config.config import Config
+from led_controllers.base_controller import BaseLEDController
 
 class AudioVisualizer(BaseLEDController):
-    def __init__(self, config=None):
-        """
-        Initialisiert den Audio-Visualisierer
+    def __init__(self):
+        """Initialisiert den Audio-Visualizer"""
+        super().__init__()
         
-        :param config: Konfigurationsobjekt (optional)
+        # Interne Zustände für Simulation
+        self._animation_step = 0
+        self._last_update_time = time.time()
+    
+    def update(self):
         """
-        super().__init__(config)
-        self.config = config or Config
-        self.last_amplitude = 0
-        self.audio_stream = None
-        self.pyaudio_instance = None
-
-    def _hsv_to_rgb(self, h, s, v):
+        Aktualisiert die LED-Anzeige basierend auf dem in der Config definierten Muster.
+        Diese Methode wird regelmäßig vom LED-Manager aufgerufen.
+        
+        Da wir den Audio-Visualizer später implementieren werden, zeigt diese Version
+        nur eine einfache Simulation an.
         """
-        Konvertiert HSV-Farbwerte in RGB
+        # Bestimme das aktuelle Muster aus der Config
+        pattern = Config.AUDIO_PATTERN
         
-        :param h: Farbton (0-1)
-        :param s: Sättigung (0-1)
-        :param v: Helligkeit (0-1)
-        :return: RGB-Tupel
-        """
-        if s == 0.0:
-            return v, v, v
-        
-        i = int(h * 6)
-        f = (h * 6) - i
-        p = v * (1 - s)
-        q = v * (1 - s * f)
-        t = v * (1 - s * (1 - f))
-        
-        if i % 6 == 0:
-            return v, t, p
-        elif i % 6 == 1:
-            return q, v, p
-        elif i % 6 == 2:
-            return p, v, t
-        elif i % 6 == 3:
-            return p, q, v
-        elif i % 6 == 4:
-            return t, p, v
+        # Aktualisiere Animation basierend auf dem Muster
+        if pattern == 'audio_pattern_01':
+            self._simulate_spectrum()
+        elif pattern == 'audio_pattern_02':
+            self._simulate_equalizer()
+        elif pattern == 'audio_pattern_03':
+            self._simulate_beat()
         else:
-            return v, p, q
-
-    def _get_input_device(self):
+            # Fallback: Einfach die gewählte Farbe anzeigen
+            self._visualize_solid_color()
+    
+    def configure_from_config(self):
         """
-        Findet das erste verfügbare Eingabegerät
-        
-        :return: Index des Eingabegeräts
+        Konfiguriert den Controller basierend auf der aktuellen Config.
+        Diese Methode wird aufgerufen, wenn sich die Konfiguration ändert.
         """
-        p = pyaudio.PyAudio()
-        for i in range(p.get_device_count()):
-            dev_info = p.get_device_info_by_index(i)
-            if dev_info['maxInputChannels'] > 0:
-                return i
-        return None
-
-    def start_visualization(self):
+        # Helligkeit setzen
+        brightness = Config.LED_BRIGHTNESS
+        self.strip_one.setBrightness(brightness)
+        self.strip_two.setBrightness(brightness)
+        
+        # Andere Parameter aus der Config übernehmen
+        self._animation_step = 0  # Animationen zurücksetzen
+    
+    def cleanup(self):
         """
-        Startet die Audio-Visualisierung
+        Bereinigt Ressourcen und bereitet den Controller auf das Beenden vor.
         """
-        print("Starte Audio-Visualisierung...")
-        
-        # Audio-Parameter
-        FORMAT = pyaudio.paInt16
-        CHANNELS = self.config.AUDIO_CHANNELS
-        RATE = self.config.AUDIO_RATE
-        CHUNK = self.config.AUDIO_CHUNK
-        
-        # PyAudio-Instanz erstellen
-        self.pyaudio_instance = pyaudio.PyAudio()
-        
-        # Eingabegerät finden
-        device_index = self._get_input_device()
-        
-        if device_index is None:
-            print("Kein Eingabegerät gefunden!")
-            return
-        
-        try:
-            # Audio-Stream öffnen
-            self.audio_stream = self.pyaudio_instance.open(
-                format=FORMAT,
-                channels=CHANNELS,
-                rate=RATE,
-                input=True,
-                input_device_index=device_index,
-                frames_per_buffer=CHUNK
-            )
-            
-            print("Audio-Visualisierung läuft... (Strg+C zum Beenden)")
-            
-            while True:
-                # Audiodaten lesen
-                data = self.audio_stream.read(CHUNK, exception_on_overflow=False)
-                
-                # Daten zu numpy-Array konvertieren
-                audio_data = np.frombuffer(data, dtype=np.int16)
-                
-                # Sicherstellen, dass Daten gültig sind
-                if len(audio_data) > 0 and np.any(np.isfinite(audio_data)):
-                    # RMS-Amplitude berechnen
-                    amplitude_rms = np.sqrt(np.mean(np.square(audio_data.astype(float))))
-                    
-                    # Auf Bereich 0-100 skalieren
-                    amplitude_scaled = min(100, int(amplitude_rms / 32768 * 100))
-                    
-                    # Glättung anwenden
-                    smoothed_amplitude = (
-                        self.last_amplitude * self.config.AUDIO_SMOOTHING + 
-                        amplitude_scaled * (1 - self.config.AUDIO_SMOOTHING)
-                    )
-                    self.last_amplitude = smoothed_amplitude
-                    
-                    # LEDs basierend auf Amplitude aktualisieren
-                    self._update_leds(smoothed_amplitude)
-                    
-                else:
-                    print("Keine gültigen Audiodaten gefunden.", end='\r')
-        
-        except KeyboardInterrupt:
-            print("\nBeendet.")
-        except Exception as e:
-            print(f"\nFehler: {e}")
-            import traceback
-            traceback.print_exc()
-        finally:
-            self.stop_visualization()
-
-    def stop_visualization(self):
+        self.clear_all_leds()
+    
+    # Hilfsmethoden für die Musterimplementierung
+    def _get_color_from_config(self):
         """
-        Stoppt die Audio-Visualisierung und räumt Ressourcen auf
+        Gibt die in der Config konfigurierte Farbe zurück.
         """
-        if self.audio_stream:
-            self.audio_stream.stop_stream()
-            self.audio_stream.close()
+        color_name = Config.LED_COLOR.lower()
         
-        if self.pyaudio_instance:
-            self.pyaudio_instance.terminate()
-        
-        # Alle LEDs ausschalten
-        self.clear_leds()
-            
-    def _update_leds(self, amplitude):
-        # Berechnen, wie viele LEDs leuchten sollen
-        num_leds = int(amplitude / 100 * self.config.LED_PER_STRIP)
-        
-        # Farbmodus auswählen
-        if self.config.AMPLITUDE_COLOR_MODE == 'fixed':
-            # Festgelegte Farbe verwenden
-            color_hex = self.config.FIXED_AMPLITUDE_COLOR.lstrip('#')
-            r = int(color_hex[0:2], 16)
-            g = int(color_hex[2:4], 16)
-            b = int(color_hex[4:6], 16)
-            
-            for i in range(self.config.LED_PER_STRIP):
-                if i < num_leds:
-                    # Festgelegte Farbe für alle LEDs
-                    self.strip_one.setPixelColor(i, Color(r, g, b))
-                    self.strip_two.setPixelColor(i, Color(r, g, b))
-                else:
-                    # Ausschalten für nicht benötigte LEDs
-                    self.strip_one.setPixelColor(i, Color(0, 0, 0))
-                    self.strip_two.setPixelColor(i, Color(0, 0, 0))
+        if color_name == 'rainbow':
+            # Regenbogenfarben werden in den spezifischen Visualisierungen behandelt
+            return Color(255, 255, 255)  # Weiß als Fallback
+        elif color_name == 'red':
+            return Color(255, 0, 0)
+        elif color_name == 'green':
+            return Color(0, 255, 0)
+        elif color_name == 'blue':
+            return Color(0, 0, 255)
+        elif color_name == 'purple':
+            return Color(128, 0, 128)
+        elif color_name == 'yellow':
+            return Color(255, 255, 0)
         else:
-            # Ursprünglicher Farbverlauf
-            for i in range(self.config.LED_PER_STRIP):
-                if i < num_leds:
-                    # Farbverlauf von Grün zu Rot
-                    hue = (120 - (i * 120 / self.config.LED_PER_STRIP)) / 360.0
-                    r, g, b = [int(x * 255) for x in self._hsv_to_rgb(hue, 1.0, 1.0)]
-                    
-                    # Setze Farbe für beide Streifen
-                    self.strip_one.setPixelColor(i, Color(r, g, b))
-                    self.strip_two.setPixelColor(i, Color(r, g, b))
-                else:
-                    # Ausschalten für nicht benötigte LEDs
-                    self.strip_one.setPixelColor(i, Color(0, 0, 0))
-                    self.strip_two.setPixelColor(i, Color(0, 0, 0))
+            return Color(255, 255, 255)  # Weiß als Fallback
+    
+    def clear_all_leds(self):
+        """
+        Schaltet alle LEDs aus - auch die außerhalb des normalen Bereichs
+        """
+        print("Schalte ALLE LEDs aus (erweiterte Version)")
         
-        # Aktualisiere LED-Streifen
+        # Verwende einen höheren Wert, um sicherzustellen, dass alle LEDs erreicht werden
+        max_leds = max(Config.LED_PER_STRIP, 20)  # Stelle sicher, dass mindestens 20 LEDs angesprochen werden
+        
+        # Alle LEDs auf Schwarz setzen
+        for i in range(max_leds):
+            self.strip_one.setPixelColor(i, Color(0, 0, 0))
+            self.strip_two.setPixelColor(i, Color(0, 0, 0))
+        
+        # Strips aktualisieren
+        self.strip_one.show()
+        time.sleep(0.05)  # Etwas längere Pause
+        self.strip_two.show()
+        time.sleep(0.05)
+        
+        # Nochmals mit einem anderen Ansatz versuchen
+        for i in range(max_leds-1, -1, -1):  # Rückwärts durchlaufen
+            self.strip_one.setPixelColor(i, Color(0, 0, 0))
+            self.strip_two.setPixelColor(i, Color(0, 0, 0))
+        
         self.strip_one.show()
         self.strip_two.show()
+    
+    # Simulierte Audio-Visualisierungen (Platzhalter)
+    def _visualize_solid_color(self):
+        """
+        Zeigt eine Volltonfarbe auf allen LEDs an.
+        """
+        color = self._get_color_from_config()
+        
+        for i in range(Config.LED_PER_STRIP):
+            self.strip_one.setPixelColor(i, color)
+            self.strip_two.setPixelColor(i, color)
+        
+        self.strip_one.show()
+        self.strip_two.show()
+    
+    def _simulate_spectrum(self):
+        """
+        Simuliert ein Audio-Spektrum ohne tatsächliche Audiodaten.
+        """
+        # Aktualisiere Animation
+        self._animation_step = (self._animation_step + 1) % 100
+        
+        # Simulierte "Spektrum"-Höhe basierend auf der Animation
+        center = Config.LED_PER_STRIP // 2
+        
+        for i in range(Config.LED_PER_STRIP):
+            # Berechne Abstand vom Zentrum
+            distance = abs(i - center)
+            
+            # Simuliere einen pulsierenden Effekt
+            intensity = max(0, 255 - distance * 30 - self._animation_step)
+            
+            # Farbe basierend auf Position
+            hue = i / float(Config.LED_PER_STRIP)
+            color = self._get_rainbow_color(hue, intensity)
+            
+            self.strip_one.setPixelColor(i, color)
+            self.strip_two.setPixelColor(i, color)
+        
+        self.strip_one.show()
+        self.strip_two.show()
+        
+        # Kleine Pause für Animation
+        time.sleep(0.02)
+    
+    def _simulate_equalizer(self):
+        """
+        Simuliert einen Equalizer ohne tatsächliche Audiodaten.
+        """
+        # Aktualisiere Animation
+        self._animation_step = (self._animation_step + 1) % 20
+        
+        # Teile den LED-Streifen in Equalizer-Bänder auf
+        num_bands = 5
+        leds_per_band = Config.LED_PER_STRIP // num_bands
+        
+        for band in range(num_bands):
+            # Simulierte Höhe für jedes Band
+            height = random.randint(1, leds_per_band)
+            
+            # Färbe die LEDs in diesem Band
+            for i in range(leds_per_band):
+                led_index = band * leds_per_band + i
+                
+                if led_index < Config.LED_PER_STRIP:
+                    if i < height:
+                        # Farbe basierend auf Band-Position
+                        hue = band / float(num_bands)
+                        color = self._get_rainbow_color(hue, 255)
+                    else:
+                        color = Color(0, 0, 0)  # Aus
+                    
+                    self.strip_one.setPixelColor(led_index, color)
+                    self.strip_two.setPixelColor(led_index, color)
+        
+        self.strip_one.show()
+        self.strip_two.show()
+        
+        # Kleine Pause für Animation
+        time.sleep(0.1)
+    
+    def _simulate_beat(self):
+        """
+        Simuliert einen Beat-Reaktions-Effekt ohne tatsächliche Audiodaten.
+        """
+        # Aktualisiere Animation
+        self._animation_step = (self._animation_step + 1) % 30
+        
+        # Simuliere einen Beat alle 15 Schritte
+        if self._animation_step == 0 or self._animation_step == 15:
+            # Beat-Effekt: Alle LEDs leuchten hell auf
+            color = self._get_color_from_config()
+            
+            for i in range(Config.LED_PER_STRIP):
+                self.strip_one.setPixelColor(i, color)
+                self.strip_two.setPixelColor(i, color)
+        else:
+            # Zwischen Beats: Dimme alle LEDs
+            intensity = max(0, 100 - abs(self._animation_step - 15) * 15)
+            
+            for i in range(Config.LED_PER_STRIP):
+                r, g, b = self._scale_color(self._get_color_from_config(), intensity / 100.0)
+                color = Color(r, g, b)
+                
+                self.strip_one.setPixelColor(i, color)
+                self.strip_two.setPixelColor(i, color)
+        
+        self.strip_one.show()
+        self.strip_two.show()
+        
+        # Kleine Pause für Animation
+        time.sleep(0.03)
+    
+    # Hilfsmethoden für Farben
+    def _get_rainbow_color(self, hue, intensity=255):
+        """
+        Gibt eine Regenbogenfarbe basierend auf dem Farbton zurück.
+        
+        :param hue: Farbton (0-1)
+        :param intensity: Helligkeit (0-255)
+        :return: Color-Objekt
+        """
+        # Konvertiere Farbton zu RGB
+        r, g, b = 0, 0, 0
+        
+        if hue < 1/6:
+            r = 255
+            g = int(hue * 6 * 255)
+        elif hue < 2/6:
+            r = int((2/6 - hue) * 6 * 255)
+            g = 255
+        elif hue < 3/6:
+            g = 255
+            b = int((hue - 2/6) * 6 * 255)
+        elif hue < 4/6:
+            g = int((4/6 - hue) * 6 * 255)
+            b = 255
+        elif hue < 5/6:
+            r = int((hue - 4/6) * 6 * 255)
+            b = 255
+        else:
+            r = 255
+            b = int((1 - hue) * 6 * 255)
+        
+        # Skaliere basierend auf Intensität
+        r = int(r * intensity / 255)
+        g = int(g * intensity / 255)
+        b = int(b * intensity / 255)
+        
+        return Color(r, g, b)
+    
+    def _scale_color(self, color, factor):
+        """
+        Skaliert eine Farbe mit einem Faktor.
+        
+        :param color: Color-Objekt
+        :param factor: Skalierungsfaktor (0-1)
+        :return: (r, g, b)-Tupel
+        """
+        r = (color >> 16) & 0xFF
+        g = (color >> 8) & 0xFF
+        b = color & 0xFF
+        
+        r = int(r * factor)
+        g = int(g * factor)
+        b = int(b * factor)
+        
+        return r, g, b

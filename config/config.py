@@ -22,10 +22,9 @@ class Config:
     VISUALIZATION_MODE = 'audio'        # Standardmodus = audio, static, off
     AUDIO_PATTERN = 'audio_pattern_01'   # LED Modus wenn Audiosynchronsierung ausgewählt ist
     STATIC_PATTERN = 'static_pattern_01' # LED Modus wenn KEINE Audiosynchronsierung ausgewählt ist
+
     LED_COLOR = 'rainbow'                      # hier werden namen verwendet z. B. GREEN = nur Grün, RAINBOW = verschiedene REGENB Bogen Farben
-    # Diese Variabeln werden irgenwo verwendet
-    AMPLITUDE_COLOR_MODE = "fixed"
-    FIXED_AMPLITUDE_COLOR = "fixed"
+
     
     @classmethod
     def set_visualization_mode(cls, mode):
@@ -127,7 +126,6 @@ class Config:
             "current_pattern": pattern_id,
             "led_color": cls.LED_COLOR.lower(),
             "led_brightness": cls.LED_BRIGHTNESS,
-            "fixed_amplitude_color": cls.FIXED_AMPLITUDE_COLOR,
             
             # Benutzerfreundliche Werte (für die Anzeige)
             "display": {
