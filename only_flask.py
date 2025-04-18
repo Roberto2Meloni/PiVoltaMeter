@@ -263,26 +263,3 @@ def start_flask_server():
         print(f"Fehler beim Starten des Webservers: {e}")
         # Zeige Fehler-Animation
         only_led.animation_webserver_error(loop=True)
-
-
-# @app.route('/set_amplitude_color', methods=['POST'])
-# def set_amplitude_color():
-#     """Setzt die Farbe für die Amplituden-Visualisierung"""
-#     try:
-#         data = request.get_json()
-#         color = data.get('color', '#00FF00')  # Standardfarbe Grün
-#         print(f"Wechsel Farbe für Amplitude auf auf {color} | Defualt 00FF00")
-        
-#         # Setze Farbe in Konfiguration
-#         Config.set_amplitude_color(color)
-        
-#         return jsonify({
-#             "status": "success", 
-#             "message": f"Amplituden-Farbe auf {color} gesetzt"
-#         })
-    
-#     except Exception as e:
-#         return jsonify({
-#             "status": "error", 
-#             "message": f"Fehler beim Setzen der Amplituden-Farbe: {str(e)}"
-#         }), 500

@@ -58,16 +58,6 @@ class Config:
         else:
             raise ValueError(f"Ungültiger Visualisierungsmodus: {cls.VISUALIZATION_MODE}")
     
-    # @classmethod
-    # def set_amplitude_color(cls, color):
-    #     """
-    #     Setzt die Farbe für die Amplituden-Visualisierung
-        
-    #     :param color: Hex-Farbwert
-    #     """
-    #     cls.FIXED_AMPLITUDE_COLOR = color
-    #     cls.AMPLITUDE_COLOR_MODE = 'fixed'
-    
     @classmethod
     def to_json(cls):
         """

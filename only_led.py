@@ -75,96 +75,8 @@ def start_phase_one():
         strip_two.show()  # Diese Zeile muss innerhalb der Schleife sein
         time.sleep(0.1)   # Verzögerung für den Animationseffekt
 
-
-def start_phase_two():
-    """Start-Animation: LEDs werden nacheinander mit zufälligen Farben eingeschaltet"""
-    print("Starte die Einschaltsequenz 2...")
-    
-    # Zuerst alle LEDs ausschalten
-    for i in range(LED_STRIP_ONE_MAX_COUNT):
-        strip_one.setPixelColor(i, Color(0, 0, 0))
-        strip_two.setPixelColor(i, Color(0, 0, 0))
-    strip_one.show()
-    strip_two.show()
-    
-    
-    # Schalte LEDs nacheinander ein
-    for i in range(LED_PER_STRIP - 1, -1, -1):
-        # Setze eine zufällige Farbe für diese LED
-        strip_one.setPixelColor(i, random_color())
-        strip_two.setPixelColor(i, random_color())
-        
-        # Aktualisiere die LED-Anzeige
-        strip_one.show()
-        strip_two.show()
-        
-        # Warte 0.1 Sekunden vor der nächsten LED
-        time.sleep(0.1)
-    
-    print(f"{LED_PER_STRIP} LEDs wurden aktiviert.")
-
-
-    
-    # Dann schalten wir sie nacheinander rückwärts aus
-    print("Schalte LEDs rückwärts nacheinander aus...")
-    for i in range(LED_PER_STRIP - 1, -1, -1):
-        strip_one.setPixelColor(i, Color(0, 0, 0))
-        strip_two.setPixelColor(i, Color(0, 0, 0))
-        strip_one.show()  # Diese Zeile muss innerhalb der Schleife sein
-        strip_two.show()  # Diese Zeile muss innerhalb der Schleife sein
-        time.sleep(0.1)   # Verzögerung für den Animationseffekt
-
-def start_phase_three():
-    """
-    Start-Animation: 
-    - Alle LEDs werden für 0.5s rot
-    - Alle LEDs werden für 0.5s gelb
-    - Alle LEDs werden für 0.5s grün
-    - Alle LEDs werden ausgeschaltet
-    """
-    print("Starte die Einschaltsequenz 3...")
-    
-    # Rot - alle LEDs auf einmal
-    print("Alle LEDs rot...")
-    for i in range(LED_PER_STRIP):
-        strip_one.setPixelColor(i, Color(255, 0, 0))  # Rot
-        strip_two.setPixelColor(i, Color(255, 0, 0))  # Rot
-    strip_one.show()
-    strip_two.show()
-    time.sleep(0.5)  # 0.5 Sekunden warten
-    
-    # Gelb - alle LEDs auf einmal
-    print("Alle LEDs gelb...")
-    for i in range(LED_PER_STRIP):
-        strip_one.setPixelColor(i, Color(255, 255, 0))  # Gelb
-        strip_two.setPixelColor(i, Color(255, 255, 0))  # Gelb
-    strip_one.show()
-    strip_two.show()
-    time.sleep(0.5)  # 0.5 Sekunden warten
-    
-    # Grün - alle LEDs auf einmal
-    print("Alle LEDs grün...")
-    for i in range(LED_PER_STRIP):
-        strip_one.setPixelColor(i, Color(0, 255, 0))  # Grün
-        strip_two.setPixelColor(i, Color(0, 255, 0))  # Grün
-    strip_one.show()
-    strip_two.show()
-    time.sleep(0.5)  # 0.5 Sekunden warten
-    
-    # Alle LEDs ausschalten
-    print("Alle LEDs aus...")
-    for i in range(LED_PER_STRIP):
-        strip_one.setPixelColor(i, Color(0, 0, 0))  # Aus
-        strip_two.setPixelColor(i, Color(0, 0, 0))  # Aus
-    strip_one.show()
-    strip_two.show()
-    
-    print("Ampel-Sequenz abgeschlossen.")
-
 def start_all_start_phase():
     start_phase_one()
-    # start_phase_two()
-    # start_phase_three()
 
 
 def animation_webserver_starting(iterations=1):
@@ -215,27 +127,6 @@ def animation_webserver_starting(iterations=1):
             time.sleep(0.1)
 
 
-def animation_webserver_ready():
-    """Animation wenn der Webserver bereit ist - grünes Aufleuchten"""
-    print("Webserver ist bereit - Animation läuft...")
-    
-    # Alle LEDs grün
-    for i in range(LED_PER_STRIP):
-        strip_one.setPixelColor(i, Color(0, 255, 0))  # Grün
-        strip_two.setPixelColor(i, Color(0, 255, 0))  # Grün
-    strip_one.show()
-    strip_two.show()
-    time.sleep(1)
-    
-    # Langsam ausblenden
-    for brightness in range(100, 0, -5):
-        for i in range(LED_PER_STRIP):
-            green_value = int(brightness * 2.55)
-            strip_one.setPixelColor(i, Color(0, green_value, 0))
-            strip_two.setPixelColor(i, Color(0, green_value, 0))
-        strip_one.show()
-        strip_two.show()
-        time.sleep(0.05)
 
 def animation_webserver_error(loop=True):
     """Animation wenn der Webserver nicht gestartet werden konnte - rotes Blinken"""
@@ -260,6 +151,7 @@ def animation_webserver_error(loop=True):
         strip_one.show()
         strip_two.show()
         time.sleep(0.5)
+
 
 def pulsing_all_led(color_hex, cycles=3):
     """
@@ -334,29 +226,7 @@ def pulsing_all_led(color_hex, cycles=3):
     strip_one.show()
     strip_two.show()
 
-def hsv_to_rgb(h, s, v):
-    """Konvertiert HSV-Farbwerte in RGB"""
-    if s == 0.0:
-        return v, v, v
-    
-    i = int(h * 6)
-    f = (h * 6) - i
-    p = v * (1 - s)
-    q = v * (1 - s * f)
-    t = v * (1 - s * (1 - f))
-    
-    if i % 6 == 0:
-        return v, t, p
-    elif i % 6 == 1:
-        return q, v, p
-    elif i % 6 == 2:
-        return p, v, t
-    elif i % 6 == 3:
-        return p, q, v
-    elif i % 6 == 4:
-        return t, p, v
-    else:
-        return v, p, q
+
 
 def audio_visualizer():
     # Audio-Parameter
