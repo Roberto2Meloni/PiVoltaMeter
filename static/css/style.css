@@ -1,150 +1,134 @@
-:root {
-    --primary-color: #2c3e50;
-    --secondary-color: #3498db;
-    --accent-color: #e74c3c;
-    --light-color: #ecf0f1;
-    --dark-color: #1a252f;
-    --success-color: #2ecc71;
-    --error-color: #e74c3c;
-    --border-radius: 8px;
-    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    --transition: all 0.3s ease;
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f5f7fa;
-    color: var(--primary-color);
-    line-height: 1.6;
-    padding: 20px;
-    max-width: 1000px;
-    margin: 0 auto;
-    min-height: 100vh;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 0;
+    color: #333;
 }
 
 header {
+    background-color: #2c3e50;
+    color: white;
     text-align: center;
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid var(--secondary-color);
+    padding: 1.5rem 0;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-h1 {
+header h1 {
+    margin: 0;
     font-size: 2.5rem;
-    color: var(--primary-color);
-    margin-bottom: 10px;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.subtitle {
+    margin: 0.5rem 0 0;
+    font-size: 1.1rem;
+    opacity: 0.8;
 }
 
 .container {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 1rem;
 }
 
 .card {
     background-color: white;
-    border-radius: var(--border-radius);
-    padding: 20px;
-    box-shadow: var(--shadow);
-    transition: var(--transition);
-}
-
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
 }
 
 h2 {
-    color: var(--secondary-color);
-    margin-bottom: 15px;
-    padding-bottom: 10px;
+    margin-top: 0;
+    color: #2c3e50;
+    font-size: 1.4rem;
     border-bottom: 1px solid #eee;
+    padding-bottom: 0.8rem;
 }
 
 .visualization-controls {
     display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin: 10px 0;
+    gap: 1rem;
+    margin-top: 1.2rem;
 }
 
 button {
-    background-color: var(--secondary-color);
-    color: white;
+    display: inline-block;
+    background-color: #f0f0f0;
+    color: #555;
     border: none;
-    padding: 12px 24px;
-    border-radius: var(--border-radius);
-    cursor: pointer;
+    border-radius: 5px;
+    padding: 0.7rem 1.2rem;
     font-size: 1rem;
-    font-weight: 600;
-    transition: var(--transition);
-    min-width: 120px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex: 1;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    position: relative;
+    /* Für Badge-Positionierung */
 }
 
 button:hover {
-    background-color: #2980b9;
-    transform: scale(1.05);
+    background-color: #e0e0e0;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
 }
 
-button:active {
-    transform: scale(0.98);
-}
-
-button#audio-mode {
-    background-color: #3498db;
-}
-
-button#pattern-mode {
-    background-color: #9b59b6;
-}
-
-button#off-mode {
-    background-color: #e74c3c;
-    /* Rote Farbe für den Off-Button */
-}
-
-button#off-mode:hover {
-    background-color: #c0392b;
-    /* Dunklere rote Farbe beim Hover */
-}
-
+/* Verbesserte Hervorhebung für aktiven Button */
 button.active {
-    background-color: var(--success-color) !important;
-    box-shadow: 0 0 8px var(--success-color);
+    background-color: #3498db;
+    color: white;
+    box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+    transform: translateY(-2px);
 }
 
-/* Wenn der Off-Button aktiv ist, spezielle Farbe */
-button#off-mode.active {
-    background-color: #c0392b !important;
-    box-shadow: 0 0 8px #e74c3c;
+/* Aktiv-Badge hinzufügen */
+button.active::after {
+    content: "AKTIV";
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: #27ae60;
+    color: white;
+    font-size: 0.65rem;
+    font-weight: bold;
+    padding: 3px 6px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .status {
-    background-color: var(--dark-color);
-    color: var(--light-color);
-    padding: 15px;
-    text-align: center;
-    border-radius: var(--border-radius);
-    font-weight: 500;
-    margin-top: 20px;
-    box-shadow: var(--shadow);
+    background-color: #f8f9fa;
+    border-left: 4px solid #3498db;
+    padding: 1rem;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
 }
 
-/* Responsive Design */
+i {
+    margin-right: 0.3rem;
+}
+
+/* Medienabfragen für responsive Anpassungen */
 @media (max-width: 600px) {
     .visualization-controls {
         flex-direction: column;
-        align-items: center;
     }
 
     button {
-        width: 100%;
+        padding: 0.8rem;
+    }
+
+    button.active::after {
+        top: 50%;
+        right: 10px;
+        transform: translateY(-50%);
     }
 }

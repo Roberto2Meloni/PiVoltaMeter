@@ -4,8 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PiVoltMeter</title>
-    <!-- Statischer Link für lokale Entwicklung -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+
+    <!-- Dies wird nur zum Entwickeln benötigt -->
     <link rel="stylesheet" href="/static/css/style.css" />
+
     <!-- Font Awesome -->
     <link
       rel="stylesheet"
@@ -24,21 +30,27 @@
         <div class="visualization-controls">
           <button
             id="audio-mode"
-            onclick="setVisualizationMode('audio')"
+            onclick="setVisualizationMode('audio', '{{ url_for('set_visualization_mode') }}')"
             class="active"
           >
             <i class="fas fa-music"></i> Audio
           </button>
-          <button id="pattern-mode" onclick="setVisualizationMode('pattern')">
+          <button
+            id="pattern-mode"
+            onclick="setVisualizationMode('pattern', '{{ url_for('set_visualization_mode') }}')"
+          >
             <i class="fas fa-palette"></i> Pattern
           </button>
-          <button id="off-mode" onclick="setVisualizationMode('off')">
+          <button
+            id="off-mode"
+            onclick="setVisualizationMode('off', '{{ url_for('set_visualization_mode') }}')"
+          >
             <i class="fas fa-power-off"></i> Off
           </button>
         </div>
       </div>
 
-      <div id="current-status" class="status">
+      <div id="status" class="status">
         <i class="fas fa-info-circle"></i> Aktueller Modus: Audio
       </div>
       <br />
@@ -48,7 +60,9 @@
       </div>
     </div>
 
-    <!-- Statischer Link für lokale Entwicklung -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+    <!-- Dies wird nur zum Entwickeln benötigt -->
     <script src="/static/js/script.js"></script>
   </body>
 </html>
