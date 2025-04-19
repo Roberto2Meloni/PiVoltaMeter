@@ -14,27 +14,34 @@
   </head>
 <body>
     <header>
-      <h1><i class="fas fa-bolt"></i> PiVoltMeter</h1>
+      <h1>
+  <a href="{{ url_for('index')}}" style="text-decoration: none; color: inherit;"><i class="fas fa-bolt"></i> PiVoltMeter</a>
+</h1>
       <p class="subtitle">LED-Visualisierung</p>
     </header>
     <div class="container">
        <!-- Neue Status-Kachel am Anfang -->
-      <div class="card">
-        <div class="status-title">
-          <i class="fas fa-info-circle"></i> Systemstatus
+<!-- Neue Status-Kachel am Anfang -->
+    <div class="card">
+      <div class="status-title">
+        <i class="fas fa-info-circle"></i> Systemstatus
+      </div>
+      <div class="status-container">
+        <div class="status-item">
+          <i class="fas fa-sliders-h"></i> Modus: <span id="current-mode">Audio</span>
         </div>
-        <div class="status-container">
-          <div class="status-item">
-            <i class="fas fa-sliders-h"></i> Modus: <span id="current-mode">Audio</span>
-          </div>
-          <div class="status-item">
-            <i class="fas fa-fill-drip"></i> Farbe: <span id="current-color">Regenbogen</span>
-          </div>
-          <div class="status-item">
-            <i class="fas fa-shapes"></i> Muster: <span id="current-pattern">Spektrum</span>
-          </div>
+        <div class="status-item">
+          <i class="fas fa-fill-drip"></i> Farbe: <span id="current-color">Regenbogen</span>
+        </div>
+        <div class="status-item">
+          <i class="fas fa-shapes"></i> Muster: <span id="current-pattern">Spektrum</span>
+        </div>
+        <!-- Neue IP-Adress-Anzeige -->
+        <div class="status-item">
+          <i class="fas fa-network-wired"></i> Netzwerk: <span id="ip-addresses">Wird geladen...</span>
         </div>
       </div>
+    </div>
       <div class="card">
         <h2><i class="fas fa-sliders-h"></i> Visualisierungsmodus</h2>
         <div class="visualization-controls">
@@ -107,20 +114,19 @@
         <div id="static-patterns" class="pattern-group" style="display: none;">
           <div class="visualization-controls">
             <button id="static_pattern_01" onclick="setPattern('static_pattern_01', '{{ url_for('set_pattern_per_mode') }}')" class="pattern-btn">
-              <i class="fas fa-fire"></i> Feuer
+              <i class="fas fa-arrow-right"></i> Simple Pulse
             </button>
             <button id="static_pattern_02" onclick="setPattern('static_pattern_02', '{{ url_for('set_pattern_per_mode') }}')" class="pattern-btn">
-              <i class="fas fa-water"></i> Wasser
+              <i class="fas fa-exchange-alt"></i> Ping Pong
             </button>
             <button id="static_pattern_03" onclick="setPattern('static_pattern_03', '{{ url_for('set_pattern_per_mode') }}')" class="pattern-btn">
-              <i class="fas fa-rainbow"></i> Regenbogen
+              <i class="fas fa-arrows-alt-h"></i> Dual Puls
             </button>
             <button id="static_pattern_04" onclick="setPattern('static_pattern_04', '{{ url_for('set_pattern_per_mode') }}')" class="pattern-btn">
-              <i class="fas fa-wind"></i> Welle
+              <i class="fas fa-digital-tachograph"></i> Matrix
             </button>
           </div>
         </div>
-        
         <!-- Off-Modus-Info -->
         <div id="off-info" class="pattern-group" style="display: none;">
           <div class="info-box">

@@ -107,21 +107,68 @@ i {
 
 /* Neue Stile für Statusbereich */
 .status-container {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Zwei gleich große Spalten */
+    gap: 0.8rem;
 }
 
-.status-container .status:nth-child(1) {
+.status-item {
+    background-color: #f8f9fa;
+    border-left: 4px solid #3498db;
+    padding: 0.8rem;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+/* Farbliche Unterscheidung für die verschiedenen Status-Items */
+.status-item:nth-child(1) {
     border-left-color: #3498db; /* Blau für Modus */
 }
 
-.status-container .status:nth-child(2) {
+.status-item:nth-child(2) {
     border-left-color: #e74c3c; /* Rot für Farbe */
 }
 
-.status-container .status:nth-child(3) {
+.status-item:nth-child(3) {
     border-left-color: #2ecc71; /* Grün für Muster */
+}
+
+.status-item:nth-child(4) {
+    border-left-color: #f39c12; /* Orange für Netzwerk/IP */
+    grid-column: 2; /* Setze das vierte Element explizit in die zweite Spalte */
+    grid-row: 1 / span 3; /* Erstreckt sich über 3 Zeilen */
+    display: flex;
+    flex-direction: column;
+}
+
+#ip-addresses {
+    font-family: monospace;
+    word-break: break-all;
+    margin-top: 0.5rem;
+    line-height: 1.4;
+}
+/* Überschrift für den Statusbereich */
+.status-title {
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    color: #2c3e50;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.5rem;
+}
+
+/* Responsive Anpassungen */
+@media (max-width: 600px) {
+    .status-container {
+        grid-template-columns: 1fr; /* Eine Spalte auf schmalen Bildschirmen */
+    }
+    
+    .status-item:nth-child(4) {
+        grid-column: auto;
+        grid-row: auto;
+        margin-top: 0.5rem;
+    }
 }
 
 #current-mode,

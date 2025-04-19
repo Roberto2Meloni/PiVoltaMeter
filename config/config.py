@@ -1,3 +1,6 @@
+import socket
+import subprocess
+
 # Konfigurationseinstellungen für LED-Visualisierung
 class Config:   
     # LED-Konfiguration
@@ -58,6 +61,47 @@ class Config:
             raise ValueError(f"Ungültiger Visualisierungsmodus: {cls.VISUALIZATION_MODE}")
     
     @classmethod
+    def get_ip_addresses(cls):
+        """
+        Ermittelt alle IP-Adressen des Geräts (speziell für Raspberry Pi)
+        
+        :return: Liste mit IP-Adressen
+        """
+        ip_addresses = []
+        
+        try:
+            # Methode 1: Direkter Zugriff über Socket-Verbindung
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            # Verbindung zu einem externen Server (hier Google DNS)
+            # Wir müssen keine echte Verbindung herstellen, nur die Route
+            s.connect(("8.8.8.8", 80))
+            ip = s.getsockname()[0]
+            s.close()
+            ip_addresses.append(f"IP: {ip}")
+            
+            # Methode 2: Hostname
+            hostname = socket.gethostname()
+            ip_addresses.append(f"Hostname: {hostname}")
+            
+            # Methode 3: Befehl auf Raspberry Pi ausführen (funktioniert nur auf Linux)
+            try:
+                cmd = "hostname -I"
+                result = subprocess.check_output(cmd, shell=True).decode('utf-8').strip()
+                ips = result.split()
+                for ip in ips:
+                    if ip and ip not in [entry.split(': ')[1] for entry in ip_addresses if ': ' in entry]:
+                        ip_addresses.append(f"IP: {ip}")
+            except Exception as e:
+                # Falls Befehl fehlschlägt, ignorieren
+                pass
+                
+        except Exception as e:
+            # Bei Fehlern eine Meldung hinzufügen
+            ip_addresses.append(f"IP-Fehler: {str(e)}")
+        
+        return ip_addresses
+
+    @classmethod
     def to_json(cls):
         """
         Konvertiert die aktuelle Konfiguration in ein JSON-kompatibles Dictionary.
@@ -81,13 +125,13 @@ class Config:
         elif cls.VISUALIZATION_MODE == 'static':
             pattern_id = cls.STATIC_PATTERN
             if pattern_id == 'static_pattern_01':
-                pattern_name = "Feuer"
+                pattern_name = "Simple Pulse"
             elif pattern_id == 'static_pattern_02':
-                pattern_name = "Wasser"
+                pattern_name = "Ping Pong"
             elif pattern_id == 'static_pattern_03':
-                pattern_name = "Regenbogen"
+                pattern_name = "Dual Puls"
             elif pattern_id == 'static_pattern_04':
-                pattern_name = "Welle"
+                pattern_name = "Matrix"
         else:
             pattern_name = "Aus"
         
@@ -131,7 +175,8 @@ class Config:
             "display": {
                 "mode_name": mode_name,
                 "color_name": color_name,
-                "pattern_name": pattern_name
+                "pattern_name": pattern_name,
+                "ip_addresses": cls.get_ip_addresses()
             }
         }
         
