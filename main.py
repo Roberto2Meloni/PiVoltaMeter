@@ -26,7 +26,9 @@ def cleanup(led_manager):
         print(f"Fehler beim Ausschalten der LEDs: {e}")
 
 # Registrieren für normales Beenden
-atexit.register(cleanup)
+# atexit.register(cleanup)
+led_manager = None  # Variable außerhalb der Funktion definieren
+
 
 def signal_handler(sig, frame):
     print("Signal empfangen, beende Programm...")

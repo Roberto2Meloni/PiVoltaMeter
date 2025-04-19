@@ -101,17 +101,20 @@ def set_pattern_per_mode():
                 led_manager.handle_config_change()
                 
             # Erfolgsantwort mit vollständiger Konfiguration
+            print("Wechsel Muster Erfolg")
             return jsonify({
                 "status": "success",
                 "message": f"Muster erfolgreich auf {pattern_name} umgestellt",
                 "config": Config.to_json()
             })
         else:
+            print("Wechsel Muster KEIN Erfolg")
             return jsonify({
                 "status": "error",
                 "message": "Kein Muster angegeben"
             }), 400
     except ValueError as e:
+        print(f"Fehler beim Musterwechsel {e}")
         return jsonify({
             "status": "error",
             "message": str(e)

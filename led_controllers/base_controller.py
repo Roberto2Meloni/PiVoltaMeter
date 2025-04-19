@@ -99,21 +99,16 @@ class BaseLEDController:
     
     def play_transition_animation(self):
         """
-        Spielt eine Regenbogen-Puls-Übergangsanimation ab,
-        bei der LEDs nacheinandes in Regenbogenfarben ein- und ausgeschaltet werden.
+        Spielt eine kurze Übergangsanimation ab:
+        Schnelles Aufblitzen aller LEDs in Regenbogenfarben und dann 0,5 Sekunden aus.
         """
         # Anzahl der Frames für die Animation
-        frames = Config.LED_PER_STRIP
+        blink_frames = 5  # Wenige Frames für schnelles Blinken
         
-        # Animation: Nacheinandes Einschalten und Ausschalten der LEDs in Regenbogenfarben
-        for frame in range(frames):
-            # Alle LEDs zunächst ausschalten
-            for i in range(Config.LED_PER_STRIP):
-                self.strip_one.setPixelColor(i, Color(0, 0, 0))
-                self.strip_two.setPixelColor(i, Color(0, 0, 0))
-            
-            # Berechne Farbe basierend auf aktueller Position
-            hue = frame / float(frames)
+        # 1. Phase: Schnelles Aufblitzen mit Regenbogenfarben
+        for frame in range(blink_frames):
+            # Berechne Farbe basierend auf aktueller Frame-Position
+            hue = frame / float(blink_frames)
             
             # Umwandlung HSV zu RGB
             if hue < 1/6:
@@ -129,62 +124,25 @@ class BaseLEDController:
             else:
                 r, g, b = 255, 0, int((1 - hue) * 6 * 255)
             
-            # Schalte die aktuelle LED ein
-            self.strip_one.setPixelColor(frame, Color(r, g, b))
-            self.strip_two.setPixelColor(frame, Color(r, g, b))
-            
-            # Aktualisiere die LED-Streifen
-            self.strip_one.show()
-            self.strip_two.show()
-            
-            # Kurze Pause für sichtbare Animation
-            time.sleep(0.05)
-        
-        # Sanftes Ausblenden
-        for frame in range(frames):
-            # Alle LEDs zunächst ausschalten
+            # Setze alle LEDs auf die gleiche Farbe für gleichzeitiges Blinken
             for i in range(Config.LED_PER_STRIP):
-                self.strip_one.setPixelColor(i, Color(0, 0, 0))
-                self.strip_two.setPixelColor(i, Color(0, 0, 0))
-            
-            # Berechne Farbe basierend auf aktueller Position
-            hue = frame / float(frames)
-            
-            # Umwandlung HSV zu RGB
-            if hue < 1/6:
-                r, g, b = 255, int(hue * 6 * 255), 0
-            elif hue < 2/6:
-                r, g, b = int((2/6 - hue) * 6 * 255), 255, 0
-            elif hue < 3/6:
-                r, g, b = 0, 255, int((hue - 2/6) * 6 * 255)
-            elif hue < 4/6:
-                r, g, b = 0, int((4/6 - hue) * 6 * 255), 255
-            elif hue < 5/6:
-                r, g, b = int((hue - 4/6) * 6 * 255), 0, 255
-            else:
-                r, g, b = 255, 0, int((1 - hue) * 6 * 255)
-            
-            # Berechne Ausblend-Intensität
-            fade_intensity = 1.0 - (frame / float(frames))
-            r = int(r * fade_intensity)
-            g = int(g * fade_intensity)
-            b = int(b * fade_intensity)
-            
-            # Schalte die aktuelle LED ein
-            self.strip_one.setPixelColor(frame, Color(r, g, b))
-            self.strip_two.setPixelColor(frame, Color(r, g, b))
+                self.strip_one.setPixelColor(i, Color(r, g, b))
+                self.strip_two.setPixelColor(i, Color(r, g, b))
             
             # Aktualisiere die LED-Streifen
             self.strip_one.show()
             self.strip_two.show()
             
-            # Kurze Pause für sichtbare Animation
+            # Kurze Pause für sichtbare Animation (sehr kurz für schnelles Blinken)
             time.sleep(0.05)
         
-        # Am Ende alle LEDs ausschalten
+        # 2. Phase: Alle LEDs ausschalten
         for i in range(Config.LED_PER_STRIP):
             self.strip_one.setPixelColor(i, Color(0, 0, 0))
             self.strip_two.setPixelColor(i, Color(0, 0, 0))
         
         self.strip_one.show()
         self.strip_two.show()
+        
+        # 3. Phase: Pause von 0,5 Sekunden
+        time.sleep(1)

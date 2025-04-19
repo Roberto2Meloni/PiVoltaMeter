@@ -4,7 +4,7 @@ import subprocess
 # Konfigurationseinstellungen für LED-Visualisierung
 class Config:   
     # LED-Konfiguration
-    LED_PER_STRIP = 10                   # Anzahl LED pro Srtip       
+    LED_PER_STRIP = 20                   # Anzahl LED pro Srtip       
     LED_PIN_ONE = 18                     # GPIO Pin für erster Streinfen 
     LED_PIN_TWO = 13                     # GPIO Pin für zweiter Streinfen
     LED_FREQ_HZ = 800000                 # Signalfrequenz für die LED-Kommunikation (800kHz)
@@ -45,7 +45,7 @@ class Config:
     def set_pattern_per_mode(cls, pattern):
         # Prüfen, welcher Modus aktiv ist und entsprechend das Muster setzen
         if cls.VISUALIZATION_MODE == 'audio':
-            if pattern in ['audio_pattern_01', 'audio_pattern_02', 'audio_pattern_03']:
+            if pattern in ['audio_pattern_01', 'audio_pattern_02', 'audio_pattern_03','audio_pattern_04','audio_pattern_05','audio_pattern_06']:
                 cls.AUDIO_PATTERN = pattern
             else:
                 raise ValueError(f"Ungültiges Audio-Muster: {pattern}")
@@ -122,6 +122,8 @@ class Config:
                 pattern_name = "Equalizer"
             elif pattern_id == 'audio_pattern_03':
                 pattern_name = "Beat"
+            elif pattern_id == 'audio_pattern_04':
+                pattern_name = "Stereo 01"
         elif cls.VISUALIZATION_MODE == 'static':
             pattern_id = cls.STATIC_PATTERN
             if pattern_id == 'static_pattern_01':

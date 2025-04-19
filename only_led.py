@@ -1,29 +1,15 @@
-
 import time
 import random
 from rpi_ws281x import PixelStrip, Color
 import pyaudio
 import numpy as np
-
-# Konfiguration für die WS2812b LEDs
-LED_PER_STRIP = 10
-LED_PIN = 18          # GPIO-Pin (18 = PWM0)
-LED_PIN_TWO = 13      # GPIO-Pin für zweiten Strip (13 = PWM1)
-LED_FREQ_HZ = 800000  # LED-Signalfrequenz
-LED_DMA_ONE = 10          # DMA-Kanal für ersten Strip
-LED_DMA_TWO = 11      # DMA-Kanal für zweiten Strip
-LED_BRIGHTNESS = 50   # Helligkeit (0-255)
-LED_INVERT = False    # Signal invertieren
-LED_CHANNEL_ONE = 0   # PWM-Kanal für Strip 1 (0 für GPIO 18)
-LED_CHANNEL_TWO = 1   # PWM-Kanal für Strip 2 (1 für GPIO 13)
-LED_STRIP_ONE_MAX_COUNT = LED_PER_STRIP  # Maximale Anzahl der LEDs in der Start-Animation
-LED_STRIP_TWO_MAX_COUNT = LED_PER_STRIP  # Maximale Anzahl der LEDs in der Start-Animation
-
+from config.config import Config
 
 
 # Initialisierung der LED-Streifen
-strip_one = PixelStrip(LED_STRIP_ONE_MAX_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA_ONE, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL_ONE)
-strip_two = PixelStrip(LED_STRIP_TWO_MAX_COUNT, LED_PIN_TWO, LED_FREQ_HZ, LED_DMA_TWO, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL_TWO)
+strip_one = PixelStrip(Config.LED_PER_STRIP, Config.LED_PIN_ONE, Config.LED_FREQ_HZ, Config.LED_DMA_ONE, Config.LED_INVERT, Config.LED_BRIGHTNESS, Config.LED_CHANNEL_ONE)
+strip_two = PixelStrip(Config.LED_PER_STRIP, Config.LED_PIN_TWO, Config.LED_FREQ_HZ, Config.LED_DMA_TWO, Config.LED_INVERT, Config.LED_BRIGHTNESS, Config.LED_CHANNEL_TWO)
+
 strip_one.begin()
 strip_two.begin()  # Strip zwei starten
 
@@ -42,7 +28,7 @@ def start_phase_one():
     print("Starte die Einschaltsequenz 1...")
     
     # Zuerst alle LEDs ausschalten
-    for i in range(LED_PER_STRIP):
+    for i in range(Config.LED_PER_STRIP):
         strip_one.setPixelColor(i, Color(0, 0, 0))
         strip_two.setPixelColor(i, Color(0, 0, 0))
     strip_one.show()
@@ -50,7 +36,7 @@ def start_phase_one():
     
     
     # Schalte LEDs nacheinander ein
-    for i in range(LED_STRIP_ONE_MAX_COUNT):
+    for i in range(Config.LED_PER_STRIP):
         # Setze eine zufällige Farbe für diese LED
         strip_one.setPixelColor(i, random_color())
         strip_two.setPixelColor(i, random_color())
@@ -62,13 +48,13 @@ def start_phase_one():
         # Warte 0.1 Sekunden vor der nächsten LED
         time.sleep(0.1)
     
-    print(f"{LED_PER_STRIP} LEDs wurden aktiviert.")
+    print(f"{Config.LED_PER_STRIP} LEDs wurden aktiviert.")
 
 
     
     # Dann schalten wir sie aus
     print("Schalte alle LEDs aus...")
-    for i in range(LED_PER_STRIP ):
+    for i in range(Config.LED_PER_STRIP ):
         strip_one.setPixelColor(i, Color(0, 0, 0))
         strip_two.setPixelColor(i, Color(0, 0, 0))
         strip_one.show()  # Diese Zeile muss innerhalb der Schleife sein
@@ -91,14 +77,14 @@ def animation_webserver_starting(iterations=1):
         count += 1
         
         # Alle LEDs ausschalten
-        for i in range(LED_PER_STRIP):
+        for i in range(Config.LED_PER_STRIP):
             strip_one.setPixelColor(i, Color(0, 0, 0))
             strip_two.setPixelColor(i, Color(0, 0, 0))
         strip_one.show()
         strip_two.show()
         
         # Blaues Licht sequentiell einschalten (von LED 1 bis zur letzten)
-        for i in range(LED_PER_STRIP):
+        for i in range(Config.LED_PER_STRIP):
             # Setze aktuelle LED auf Blau
             strip_one.setPixelColor(i, Color(0, 0, 255))  # Blau
             strip_two.setPixelColor(i, Color(0, 0, 255))  # Blau
@@ -114,7 +100,7 @@ def animation_webserver_starting(iterations=1):
         time.sleep(0.3)
         
         # Blaues Licht sequentiell ausschalten (von LED 1 bis zur letzten)
-        for i in range(LED_PER_STRIP):
+        for i in range(Config.LED_PER_STRIP):
             # Setze aktuelle LED aus
             strip_one.setPixelColor(i, Color(0, 0, 0))  # Aus
             strip_two.setPixelColor(i, Color(0, 0, 0))  # Aus
@@ -137,7 +123,7 @@ def animation_webserver_error(loop=True):
     
     for _ in range(cycles):
         # Alle LEDs rot
-        for i in range(LED_PER_STRIP):
+        for i in range(Config.LED_PER_STRIP):
             strip_one.setPixelColor(i, Color(255, 0, 0))  # Rot
             strip_two.setPixelColor(i, Color(255, 0, 0))  # Rot
         strip_one.show()
@@ -145,7 +131,7 @@ def animation_webserver_error(loop=True):
         time.sleep(0.5)
         
         # Alle LEDs aus
-        for i in range(LED_PER_STRIP):
+        for i in range(Config.LED_PER_STRIP):
             strip_one.setPixelColor(i, Color(0, 0, 0))  # Aus
             strip_two.setPixelColor(i, Color(0, 0, 0))  # Aus
         strip_one.show()
@@ -181,7 +167,7 @@ def pulsing_all_led(color_hex, cycles=3):
             current_b = int(b * brightness_factor)
             
             # Alle LEDs auf aktuelle Farbe setzen
-            for i in range(LED_PER_STRIP):
+            for i in range(Config.LED_PER_STRIP):
                 strip_one.setPixelColor(i, Color(current_r, current_g, current_b))
                 strip_two.setPixelColor(i, Color(current_r, current_g, current_b))
             
@@ -205,7 +191,7 @@ def pulsing_all_led(color_hex, cycles=3):
             current_b = int(b * brightness_factor)
             
             # Alle LEDs auf aktuelle Farbe setzen
-            for i in range(LED_PER_STRIP):
+            for i in range(Config.LED_PER_STRIP):
                 strip_one.setPixelColor(i, Color(current_r, current_g, current_b))
                 strip_two.setPixelColor(i, Color(current_r, current_g, current_b))
             
@@ -220,7 +206,7 @@ def pulsing_all_led(color_hex, cycles=3):
         time.sleep(0.2)
     
     # Alle LEDs ausschalten
-    for i in range(LED_PER_STRIP):
+    for i in range(Config.LED_PER_STRIP):
         strip_one.setPixelColor(i, Color(0, 0, 0))
         strip_two.setPixelColor(i, Color(0, 0, 0))
     strip_one.show()
@@ -296,13 +282,13 @@ def audio_visualizer():
                 print(f"Amplitude: {smoothed_amplitude:3.1f}/100 |{bar:<50}|", end='\r')
                 
                 # Berechne, wie viele LEDs leuchten sollen
-                num_leds = int(smoothed_amplitude / 100 * LED_PER_STRIP)
+                num_leds = int(smoothed_amplitude / 100 * Config.LED_PER_STRIP)
                 
                 # Aktualisiere LEDs
-                for i in range(LED_PER_STRIP):
+                for i in range(Config.LED_PER_STRIP):
                     if i < num_leds:
                         # Farbverlauf von Grün zu Rot
-                        hue = (120 - (i * 120 / LED_PER_STRIP)) / 360.0
+                        hue = (120 - (i * 120 / Config.LED_PER_STRIP)) / 360.0
                         r, g, b = [int(x * 255) for x in hsv_to_rgb(hue, 1.0, 1.0)]
                         strip_one.setPixelColor(i, Color(r, g, b))
                         strip_two.setPixelColor(i, Color(r, g, b))
@@ -328,7 +314,7 @@ def audio_visualizer():
         p.terminate()
         
         # Alle LEDs ausschalten
-        for i in range(LED_PER_STRIP):
+        for i in range(Config.LED_PER_STRIP):
             strip_one.setPixelColor(i, Color(0, 0, 0))
             strip_two.setPixelColor(i, Color(0, 0, 0))
         strip_one.show()
