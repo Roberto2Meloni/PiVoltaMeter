@@ -23,7 +23,7 @@ class Config:
                                         # Kleinere Werte erhöhen die Reaktionsgeschwindigkeit, erhöhen aber auch CPU-Last
     # Muster-Visualisierungs-Einstellungen
     VISUALIZATION_MODE = 'audio'        # Standardmodus = audio, static, off
-    AUDIO_PATTERN = 'audio_pattern_01'   # LED Modus wenn Audiosynchronsierung ausgewählt ist
+    AUDIO_PATTERN = 'audio_pattern_06'   # LED Modus wenn Audiosynchronsierung ausgewählt ist
     STATIC_PATTERN = 'static_pattern_01' # LED Modus wenn KEINE Audiosynchronsierung ausgewählt ist
 
     LED_COLOR = 'rainbow'                      # hier werden namen verwendet z. B. GREEN = nur Grün, RAINBOW = verschiedene REGENB Bogen Farben

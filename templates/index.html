@@ -21,7 +21,6 @@
     </header>
     <div class="container">
        <!-- Neue Status-Kachel am Anfang -->
-<!-- Neue Status-Kachel am Anfang -->
     <div class="card">
       <div class="status-title">
         <i class="fas fa-info-circle"></i> Systemstatus
@@ -95,29 +94,38 @@
       <div id="pattern-container" class="card">
         <h2><i class="fas fa-sliders-h"></i> Muster</h2>
         
-
-      
-      <!-- Audiomodus-Muster -->
+      <!-- Audiomodus-Muster - Neu strukturiert -->
       <div id="audio-patterns" class="pattern-group">
-        <div class="visualization-controls">
-          <button id="audio_pattern_01" onclick="setPattern('audio_pattern_01', '{{ url_for('set_pattern_per_mode') }}')" class="pattern-btn active">
-            <i class="fas fa-wave-square"></i> Mono Vu Meter
-          </button>
-          <button id="audio_pattern_02" onclick="setPattern('audio_pattern_02', '{{ url_for('set_pattern_per_mode') }}')" class="pattern-btn">
-            <i class="fas fa-volume-up"></i> Mono Puls
-          </button>
-          <button id="audio_pattern_03" onclick="setPattern('audio_pattern_03', '{{ url_for('set_pattern_per_mode') }}')" class="pattern-btn">
-            <i class="fas fa-drum"></i> Mono Center Bloom
-          </button>
-          <button id="audio_pattern_04" onclick="setPattern('audio_pattern_04', '{{ url_for('set_pattern_per_mode') }}')" class="pattern-btn active">
-            <i class="fas fa-signal"></i> Stereo Vu Meter
-          </button>
-          <button id="audio_pattern_05" onclick="setPattern('audio_pattern_05', '{{ url_for('set_pattern_per_mode') }}')" class="pattern-btn">
-            <i class="fas fa-volume-down"></i> Stereo Puls
-          </button>
-          <button id="audio_pattern_06" onclick="setPattern('audio_pattern_06', '{{ url_for('set_pattern_per_mode') }}')" class="pattern-btn">
-            <i class="fas fa-compact-disc"></i> Stereo Center Bloom
-          </button>
+        <!-- Mono-Muster -->
+        <div class="pattern-category">
+          <h3><i class="fas fa-volume-up"></i> Mono Muster</h3>
+          <div class="pattern-row">
+            <button id="audio_pattern_01" onclick="setPattern('audio_pattern_01', '{{ url_for('set_pattern_per_mode') }}')" class="pattern-btn active">
+              <i class="fas fa-wave-square"></i> Vu Meter
+            </button>
+            <button id="audio_pattern_02" onclick="setPattern('audio_pattern_02', '{{ url_for('set_pattern_per_mode') }}')" class="pattern-btn">
+              <i class="fas fa-volume-up"></i> Puls
+            </button>
+            <button id="audio_pattern_03" onclick="setPattern('audio_pattern_03', '{{ url_for('set_pattern_per_mode') }}')" class="pattern-btn">
+              <i class="fas fa-drum"></i> Center Bloom
+            </button>
+          </div>
+        </div>
+        
+        <!-- Stereo-Muster -->
+        <div class="pattern-category">
+          <h3><i class="fas fa-headphones"></i> Stereo Muster</h3>
+          <div class="pattern-row">
+            <button id="audio_pattern_04" onclick="setPattern('audio_pattern_04', '{{ url_for('set_pattern_per_mode') }}')" class="pattern-btn active">
+              <i class="fas fa-signal"></i> Vu Meter
+            </button>
+            <button id="audio_pattern_05" onclick="setPattern('audio_pattern_05', '{{ url_for('set_pattern_per_mode') }}')" class="pattern-btn">
+              <i class="fas fa-volume-down"></i> Puls
+            </button>
+            <button id="audio_pattern_06" onclick="setPattern('audio_pattern_06', '{{ url_for('set_pattern_per_mode') }}')" class="pattern-btn">
+              <i class="fas fa-compact-disc"></i> Center Bloom
+            </button>
+          </div>
         </div>
       </div>
         

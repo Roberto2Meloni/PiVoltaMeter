@@ -40,10 +40,10 @@ signal.signal(signal.SIGTERM, signal_handler)
 
 def main():
     """Hauptfunktion des Programms"""
+    print("Starte LED-Visualisierungssystem")
+        # LED-Manager erstellen
+    led_manager = LEDManager()
     try:
-        print("Starte LED-Visualisierungssystem")
-         # LED-Manager erstellen
-        led_manager = LEDManager()
         
         # LED-Start-Animation
         only_led.start_all_start_phase()

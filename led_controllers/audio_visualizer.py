@@ -30,19 +30,57 @@ class AudioVisualizer(BaseLEDController):
         self._start_audio_stream()
     
     def _start_audio_stream(self):
-        """Startet den Audio-Stream für die Echtzeit-Analyse"""
+        """Startet den Audio-Stream für die Echtzeit-Analyse mit automatischer Geräteerkennung"""
         try:
+            # Liste verfügbare Geräte auf
+            info = self.p.get_host_api_info_by_index(0)
+            num_devices = info.get('deviceCount')
+            
+            # Ausgabe der verfügbaren Geräte für Debugging
+            print(f"Verfügbare Audiogeräte: {num_devices}")
+            
+            # Standardgerät finden, das mindestens 1 Eingangskanal hat
+            default_device_index = None
+            max_input_channels = 0
+            
+            for i in range(num_devices):
+                device_info = self.p.get_device_info_by_index(i)
+                input_channels = int(device_info.get('maxInputChannels', 0))
+                
+                print(f"Gerät {i}: {device_info.get('name')}, Eingangskanäle: {input_channels}")
+                
+                # Suche nach dem Gerät mit den meisten Eingangskanälen
+                if input_channels > max_input_channels:
+                    max_input_channels = input_channels
+                    default_device_index = i
+            
+            if default_device_index is None or max_input_channels == 0:
+                print("Kein geeignetes Audiogerät gefunden! Verwende simulierte Daten.")
+                self.stream = None
+                return
+                
+            # Bestimme die maximale Anzahl an Kanälen (1 für Mono, 2 für Stereo)
+            channel_count = min(2, max_input_channels)
+            self.CHANNELS = channel_count  # Update der Klassenattribute
+            
+            device_info = self.p.get_device_info_by_index(default_device_index)
+            print(f"Verwende Audiogerät: {device_info.get('name')} mit {channel_count} Kanal(en)")
+            
+            # Stream mit der korrekten Kanalanzahl erstellen
             self.stream = self.p.open(
                 format=self.FORMAT,
-                channels=self.CHANNELS,
+                channels=channel_count,
                 rate=self.RATE,
                 input=True,
+                input_device_index=default_device_index,
                 frames_per_buffer=self.CHUNK
             )
-            print("Audiostream erfolgreich gestartet")
+            
+            print(f"Audiostream erfolgreich gestartet mit {channel_count} Kanal(en)")
+            
         except Exception as e:
             print(f"Fehler beim Starten des Audiostreams: {e}")
-            # Fallback auf simulierte Werte, wenn kein Mikrofon verfügbar ist
+            # Fallback auf simulierte Werte
             self.stream = None
     
     def update(self):
