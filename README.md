@@ -123,3 +123,11 @@ EOF
 
 sudo update-initramfs -u
 
+# Verkabelung
+Gemäss Bild Pi-Ping-Belegung
+
+# Start des Projekte
+Die App kann nur als root gestartet werden also:
+1. sudo su
+2. source venv/bin/activate
+3. python3 main.py
