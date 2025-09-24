@@ -128,6 +128,9 @@ class AudioVisualizer(BaseLEDController):
                 # Umwandlung in NumPy-Array
                 audio_data = np.frombuffer(data, dtype=np.int16)
                 
+                # Zum Loggen
+                # print(audio_data)
+                
                 # Stereo-Daten separieren in linken und rechten Kanal
                 if self.CHANNELS == 2:
                     # Linker Kanal (gerade Indizes)

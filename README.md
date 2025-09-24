@@ -122,3 +122,4 @@ blacklist snd_bcm2835
 EOF
 
 sudo update-initramfs -u
+
