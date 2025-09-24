@@ -4,7 +4,7 @@ import numpy as np
 import pyaudio
 from rpi_ws281x import Color
 from config.config import Config
-from led_controllers.base_controller import BaseLEDController
+from led.manager import BaseLEDController
 
 class AudioVisualizer(BaseLEDController):
     def __init__(self):

@@ -1,8 +1,8 @@
 import threading
 import time
 from config.config import Config
-from led_controllers.audio_visualizer import AudioVisualizer
-from led_controllers.pattern_visualizer import PatternVisualizer
+from led.audio_visualizer import AudioVisualizer
+from led.pattern_visualizer import PatternVisualizer
 
 class LEDManager:
     def __init__(self):

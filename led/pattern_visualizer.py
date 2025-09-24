@@ -4,7 +4,7 @@ import random
 import math
 from rpi_ws281x import Color
 from config.config import Config
-from led_controllers.base_controller import BaseLEDController
+from led.manager import BaseLEDController
 
 class PatternVisualizer(BaseLEDController):
     def __init__(self):
