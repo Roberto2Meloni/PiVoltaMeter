@@ -165,8 +165,8 @@ function setPattern(pattern_name, url) {
 }
 
 // Farbe einstellen
-function setColor(color, url) {
-    console.log("setColor aufgerufen mit:", color, url);
+function setColor(color_name, hex_code, url) {
+    console.log("setColor aufgerufen mit:", color_name, "mit HEX ", hex_code, url);
     
     // Entferne aktiven Status von allen Farb-Buttons
     document.querySelectorAll('.color-btn').forEach(btn => {
@@ -174,7 +174,7 @@ function setColor(color, url) {
     });
     
     // Füge aktiven Status zum ausgewählten Farb-Button hinzu
-    const colorButton = document.getElementById('color_' + color);
+    const colorButton = document.getElementById('color_' + color_name);
     if (colorButton) {
         colorButton.classList.add('active');
         
@@ -185,7 +185,7 @@ function setColor(color, url) {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ color: color })
+                body: JSON.stringify({ hex_code: hex_code })
             })
             .then(response => response.json())
             .then(data => {

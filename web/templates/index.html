@@ -70,22 +70,22 @@
       <div id="color-container" class="card">
         <h2><i class="fas fa-fill-drip"></i> Farbauswahl</h2>
         <div class="color-controls">
-          <button id="color_rainbow" onclick="setColor('rainbow', '{{ url_for('set_color') }}')" class="color-btn active" style="background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet);">
+          <button id="color_rainbow" onclick="setColor('rainbow', 'rainbow','{{ url_for('set_color') }}')" class="color-btn active" style="background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet);">
             <i class="fas fa-rainbow"></i> Regenbogen
           </button>
-          <button id="color_green" onclick="setColor('green', '{{ url_for('set_color') }}')" class="color-btn" style="background-color: #2ecc71;">
+          <button id="color_green" onclick="setColor('green','#2ecc71', '{{ url_for('set_color') }}')" class="color-btn" style="background-color: #2ecc71;">
             <i class="fas fa-leaf"></i> Grün
           </button>
-          <button id="color_blue" onclick="setColor('blue', '{{ url_for('set_color') }}')" class="color-btn" style="background-color: #3498db;">
+          <button id="color_blue" onclick="setColor('blue', '#3498db', '{{ url_for('set_color') }}')" class="color-btn" style="background-color: #3498db;">
             <i class="fas fa-tint"></i> Blau
           </button>
-          <button id="color_red" onclick="setColor('red', '{{ url_for('set_color') }}')" class="color-btn" style="background-color: #e74c3c;">
+          <button id="color_red" onclick="setColor('red', '#e74c3c', '{{ url_for('set_color') }}')" class="color-btn" style="background-color: #e74c3c;">
             <i class="fas fa-fire"></i> Rot
           </button>
-          <button id="color_purple" onclick="setColor('purple', '{{ url_for('set_color') }}')" class="color-btn" style="background-color: #9b59b6;">
+          <button id="color_purple" onclick="setColor('purple', '#9b59b6', '{{ url_for('set_color') }}')" class="color-btn" style="background-color: #9b59b6;">
             <i class="fas fa-magic"></i> Lila
           </button>
-          <button id="color_yellow" onclick="setColor('yellow', '{{ url_for('set_color') }}')" class="color-btn" style="background-color: #f1c40f;">
+          <button id="color_yellow" onclick="setColor('yellow', '#f1c40f', '{{ url_for('set_color') }}')" class="color-btn" style="background-color: #f1c40f;">
             <i class="fas fa-sun"></i> Gelb
           </button>
         </div>

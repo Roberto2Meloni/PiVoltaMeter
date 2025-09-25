@@ -1,12 +1,15 @@
-# PiVoltMeter Web-Interface - Vereinfacht
-# Datum: 24.09.2025
-# Version: 2.0
-
-from flask import Flask, render_template, request, jsonify
+from flask import Flask,  render_template, request, jsonify
 from rpi_ws281x import Color
 import time
 import random
 import builtins
+import sys
+import os
+
+# Füge das Parent-Verzeichnis zum Python-Path hinzu
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, parent_dir)
+
 from config.config import Config
 
 # Flask-App erstellen
@@ -36,22 +39,24 @@ def set_all_leds_color(color_hex):
     left_strip, right_strip = get_led_strips()
     color = hex_to_color(color_hex)
     
-    # Beide Strips - unterschiedliche LED-Anzahlen!
-    for i in range(Config.LEFT_STRIP_LEDS):
+    # Beide Strips setzen
+    for i in range(Config.LEFT_STRIP_LEDS):  # links
         left_strip.setPixelColor(i, color)
-    for i in range(Config.RIGHT_STRIP_LEDS):
+    for i in range(Config.RIGHT_STRIP_LEDS):  # rechts
         right_strip.setPixelColor(i, color)
     
     left_strip.show()
     right_strip.show()
+    
+
+
 
 def clear_all_leds():
     """Schaltet alle LEDs aus"""
     left_strip, right_strip = get_led_strips()
     
-    for i in range(Config.LEFT_STRIP_LEDS):
+    for i in range(Config.LED_PER_STRIP):
         left_strip.setPixelColor(i, Color(0, 0, 0))
-    for i in range(Config.RIGHT_STRIP_LEDS):
         right_strip.setPixelColor(i, Color(0, 0, 0))
     
     left_strip.show()
@@ -62,7 +67,7 @@ def random_color():
     return Color(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 
 # ========================================
-# ANIMATIONS (vereinfacht)
+# ANIMATIONS
 # ========================================
 
 def animation_sequence_one():
@@ -70,66 +75,14 @@ def animation_sequence_one():
     left_strip, right_strip = get_led_strips()
     clear_all_leds()
     
-    # LEDs nacheinander mit zufälligen Farben
-    max_leds = max(Config.LEFT_STRIP_LEDS, Config.RIGHT_STRIP_LEDS)
-    
-    for i in range(max_leds):
-        # Nur setzen wenn LED existiert
-        if i < Config.LEFT_STRIP_LEDS:
-            left_strip.setPixelColor(i, random_color())
-        if i < Config.RIGHT_STRIP_LEDS:
-            right_strip.setPixelColor(i, random_color())
-        
+    for i in range(Config.LED_PER_STRIP):
+        left_strip.setPixelColor(i, random_color())
+        right_strip.setPixelColor(i, random_color())
         left_strip.show()
         right_strip.show()
         time.sleep(0.1)
     
     time.sleep(0.5)
-    clear_all_leds()
-
-def animation_sequence_two():
-    """Start-Sequenz 2: LEDs rückwärts einschalten"""
-    left_strip, right_strip = get_led_strips()
-    clear_all_leds()
-    
-    # Rückwärts von der größten LED-Anzahl
-    max_leds = max(Config.LEFT_STRIP_LEDS, Config.RIGHT_STRIP_LEDS)
-    
-    for i in range(max_leds - 1, -1, -1):
-        # Nur setzen wenn LED existiert
-        if i < Config.LEFT_STRIP_LEDS:
-            left_strip.setPixelColor(i, random_color())
-        if i < Config.RIGHT_STRIP_LEDS:
-            right_strip.setPixelColor(i, random_color())
-        
-        left_strip.show()
-        right_strip.show()
-        time.sleep(0.1)
-    
-    time.sleep(0.5)
-    clear_all_leds()
-
-def animation_sequence_three():
-    """Start-Sequenz 3: Ampel-Sequenz"""
-    colors = [
-        Color(255, 0, 0),    # Rot
-        Color(255, 255, 0),  # Gelb
-        Color(0, 255, 0),    # Grün
-    ]
-    
-    left_strip, right_strip = get_led_strips()
-    
-    for color in colors:
-        # Alle LEDs auf Farbe
-        for i in range(Config.LEFT_STRIP_LEDS):
-            left_strip.setPixelColor(i, color)
-        for i in range(Config.RIGHT_STRIP_LEDS):
-            right_strip.setPixelColor(i, color)
-        
-        left_strip.show()
-        right_strip.show()
-        time.sleep(0.5)
-    
     clear_all_leds()
 
 def animation_pulse_leds(color_hex, cycles=3):
@@ -146,15 +99,10 @@ def animation_pulse_leds(color_hex, cycles=3):
         # Aufhellen
         for brightness in range(0, 101, 5):
             factor = brightness / 100.0
-            r = int(r_base * factor)
-            g = int(g_base * factor)
-            b = int(b_base * factor)
-            color = Color(r, g, b)
+            color = Color(int(r_base * factor), int(g_base * factor), int(b_base * factor))
             
-            # Alle LEDs setzen
-            for i in range(Config.LEFT_STRIP_LEDS):
+            for i in range(Config.LED_PER_STRIP):
                 left_strip.setPixelColor(i, color)
-            for i in range(Config.RIGHT_STRIP_LEDS):
                 right_strip.setPixelColor(i, color)
             
             left_strip.show()
@@ -164,15 +112,10 @@ def animation_pulse_leds(color_hex, cycles=3):
         # Abdunkeln
         for brightness in range(100, -1, -5):
             factor = brightness / 100.0
-            r = int(r_base * factor)
-            g = int(g_base * factor)
-            b = int(b_base * factor)
-            color = Color(r, g, b)
+            color = Color(int(r_base * factor), int(g_base * factor), int(b_base * factor))
             
-            # Alle LEDs setzen
-            for i in range(Config.LEFT_STRIP_LEDS):
+            for i in range(Config.LED_PER_STRIP):
                 left_strip.setPixelColor(i, color)
-            for i in range(Config.RIGHT_STRIP_LEDS):
                 right_strip.setPixelColor(i, color)
             
             left_strip.show()
@@ -181,9 +124,8 @@ def animation_pulse_leds(color_hex, cycles=3):
     
     clear_all_leds()
 
-# ========================================
-# FLASK ROUTES
-# ========================================
+
+# Hier sind die Routen
 
 @app.route('/')
 def index():
@@ -194,52 +136,18 @@ def index():
     # Übergebe die Konfiguration als Variable an das Template
     return render_template('index.html', config=config_json)
 
-@app.route('/sequence_one')
-def sequence_one():
-    """API: Sequenz 1"""
-    try:
-        animation_sequence_one()
-        return jsonify({"status": "success", "message": "Sequenz 1 ausgeführt"})
-    except Exception as e:
-        return jsonify({"status": "error", "message": f"Fehler: {str(e)}"}), 500
-
-@app.route('/sequence_two') 
-def sequence_two():
-    """API: Sequenz 2"""
-    try:
-        animation_sequence_two()
-        return jsonify({"status": "success", "message": "Sequenz 2 ausgeführt"})
-    except Exception as e:
-        return jsonify({"status": "error", "message": f"Fehler: {str(e)}"}), 500
-
-@app.route('/sequence_three')
-def sequence_three():
-    """API: Sequenz 3""" 
-    try:
-        animation_sequence_three()
-        return jsonify({"status": "success", "message": "Sequenz 3 ausgeführt"})
-    except Exception as e:
-        return jsonify({"status": "error", "message": f"Fehler: {str(e)}"}), 500
-
-@app.route('/run_all')
-def run_all():
-    """API: Alle Sequenzen"""
-    try:
-        animation_sequence_one()
-        time.sleep(0.5)
-        animation_sequence_two()
-        time.sleep(0.5)
-        animation_sequence_three()
-        return jsonify({"status": "success", "message": "Alle Sequenzen ausgeführt"})
-    except Exception as e:
-        return jsonify({"status": "error", "message": f"Fehler: {str(e)}"}), 500
 
 @app.route('/set_color', methods=['POST'])
 def set_color():
     """API: LEDs auf Farbe setzen"""
     try:
+        print("--------------Farb Weschel empfangen-----------")
         data = request.get_json()
-        color = data.get('color', '#00FF00')
+        color = data.get('hex_code',)
+        print(f"Farbe = {color}")
+        print(20 * "----")
+        print(data)
+        print(20 * "----")
         
         # Farbe setzen und in Config speichern
         set_all_leds_color(color)
@@ -251,6 +159,7 @@ def set_color():
             "message": f"LEDs auf {color} gesetzt"
         })
     except Exception as e:
+        print(f"Fehle beim Farbwechsel {e}")
         return jsonify({"status": "error", "message": f"Fehler: {str(e)}"}), 500
 
 @app.route('/set_amplitude_color', methods=['POST'])
@@ -336,75 +245,3 @@ def set_pattern_per_mode():
         })
     except Exception as e:
         return jsonify({"status": "error", "message": f"Fehler: {str(e)}"}), 500
-
-# ========================================
-# DEBUG ROUTES (optional)
-# ========================================
-
-@app.route('/debug/config')
-def debug_config():
-    """Debug: Zeigt aktuelle Konfiguration"""
-    return jsonify({
-        "left_strip_leds": Config.LEFT_STRIP_LEDS,
-        "right_strip_leds": Config.RIGHT_STRIP_LEDS,
-        "visualization_mode": Config.VISUALIZATION_MODE,
-        "current_color": Config.CURRENT_COLOR,
-        "amplitude_color": Config.FIXED_AMPLITUDE_COLOR,
-        "brightness": Config.LED_BRIGHTNESS
-    })
-
-@app.route('/debug/test_leds')
-def debug_test_leds():
-    """Debug: Teste LED-Strips einzeln"""
-    try:
-        left_strip, right_strip = get_led_strips()
-        
-        # Linker Strip rot
-        for i in range(Config.LEFT_STRIP_LEDS):
-            left_strip.setPixelColor(i, Color(255, 0, 0))
-        left_strip.show()
-        time.sleep(1)
-        
-        # Rechter Strip blau  
-        for i in range(Config.RIGHT_STRIP_LEDS):
-            right_strip.setPixelColor(i, Color(0, 0, 255))
-        right_strip.show()
-        time.sleep(1)
-        
-        # Ausschalten
-        clear_all_leds()
-        
-        return jsonify({
-            "status": "success", 
-            "message": f"Test: {Config.LEFT_STRIP_LEDS}L (rot) + {Config.RIGHT_STRIP_LEDS}R (blau)"
-        })
-    except Exception as e:
-        return jsonify({"status": "error", "message": f"Fehler: {str(e)}"}), 500
-
-# ========================================
-# COMPATIBILITY ROUTES (für alte templates)
-# ========================================
-
-@app.route('/start_audio_visualization')
-def start_audio_visualization():
-    """Kompatibilität: Audio-Visualisierung starten"""
-    try:
-        Config.set_visualization_mode('audio')
-        return jsonify({"status": "success", "message": "Audio-Visualisierung gestartet"})
-    except Exception as e:
-        return jsonify({"status": "error", "message": f"Fehler: {str(e)}"}), 500
-
-@app.route('/stop_audio_visualization') 
-def stop_audio_visualization():
-    """Kompatibilität: Audio-Visualisierung stoppen"""
-    try:
-        Config.set_visualization_mode('static')
-        clear_all_leds()
-        return jsonify({"status": "success", "message": "Audio-Visualisierung gestoppt"})
-    except Exception as e:
-        return jsonify({"status": "error", "message": f"Fehler: {str(e)}"}), 500
-
-if __name__ == '__main__':
-    # Nur für Entwicklung - normalerweise wird durch main.py gestartet
-    print("⚠️  Starte Flask direkt - LED-Strips nicht verfügbar!")
-    app.run(host='0.0.0.0', port=5000, debug=True)

@@ -14,7 +14,7 @@ class AudioVisualizer(BaseLEDController):
         # Audioverarbeitungs-Parameter
         self.CHUNK = 1024  # Anzahl der Audio-Samples pro Frame
         self.FORMAT = pyaudio.paInt16  # Audio-Format
-        self.CHANNELS = 2  # Stereo
+        self.CHANNELS = Config.audio_channels  # Stereo
         self.RATE = 44100  # Sampling-Rate in Hz
         
         # PyAudio-Instanz initialisieren

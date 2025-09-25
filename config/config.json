@@ -1,10 +1,10 @@
 {
-  "left_strip_leds": 10,
-  "right_strip_leds": 10,
+  "left_strip_leds": 20,
+  "right_strip_leds": 20,
   "visualization_mode": "static",
   "audio_channels": 1,
   "led_brightness": 50,
-  "current_color": "#00FF00",
+  "current_color": "#f1c40f",
   "current_pattern": "rainbow",
   "audio_smoothing": 0.3,
   "amplitude_color_mode": "gradient",

@@ -39,6 +39,15 @@ def init_led_strips():
     right_strip.begin()
     
     print(f"✅ LEDs bereit: {Config.LEFT_STRIP_LEDS}L + {Config.RIGHT_STRIP_LEDS}R")
+
+    for i in range(500):
+        left_strip.setPixelColor(i, Color(0, 0, 0))
+
+    for i in range(500):
+        right_strip.setPixelColor(i, Color(0, 0, 0))
+        
+    left_strip.show()
+    right_strip.show()
     return left_strip, right_strip
 
 def startup_animation(left_strip, right_strip):
@@ -62,7 +71,7 @@ def startup_animation(left_strip, right_strip):
         # Anzeigen
         left_strip.show()
         right_strip.show()
-        time.sleep(0.5)
+        time.sleep(0.25)
     
     # Alle LEDs ausschalten
     clear_leds(left_strip, right_strip)
@@ -72,8 +81,10 @@ def clear_leds(left_strip, right_strip):
     """Schaltet alle LEDs aus"""
     for i in range(Config.LEFT_STRIP_LEDS):
         left_strip.setPixelColor(i, Color(0, 0, 0))
+
     for i in range(Config.RIGHT_STRIP_LEDS):
         right_strip.setPixelColor(i, Color(0, 0, 0))
+        
     left_strip.show()
     right_strip.show()
 
@@ -115,18 +126,8 @@ def start_flask_server():
     """Startet den Flask-Webserver"""
     try:
         print("🌐 Starte Web-Server...")
-        # TODO: Wird später durch web/app.py ersetzt
         from web.app import app
-        app.run(host='0.0.0.0', port=5000, threaded=True)
-    except ImportError:
-        # Fallback falls web/app.py noch nicht existiert
-        print("⚠️  web/app.py nicht gefunden - verwende Fallback")
-        try:
-            from only_flask import start_flask_server as old_flask
-            old_flask()
-        except ImportError:
-            print("❌ Kein Flask-Server verfügbar!")
-            return False
+        app.run(host='0.0.0.0', port=5000, threaded=True, debug=True)
     except Exception as e:
         print(f"❌ Fehler beim Starten des Web-Servers: {e}")
         return False
@@ -171,8 +172,10 @@ def main():
         
     except KeyboardInterrupt:
         print("\n🛑 Programm beendet durch Benutzer")
+        clear_leds(left_strip, right_strip)
     except Exception as e:
         print(f"❌ Unerwarteter Fehler: {e}")
+        clear_leds(left_strip, right_strip)
         import traceback
         traceback.print_exc()
     finally:
