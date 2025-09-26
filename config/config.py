@@ -1,7 +1,6 @@
-# Minimalistische Konfiguration für PiVoltMeter LED-Steuerung
-# Nur Werte die LED-Darstellung beeinflussen werden in JSON gespeichert
+# LED-optimierte Konfiguration für PiVoltMeter
 # Datum: 24.09.2025
-# Version: 2.0
+# Version: 2.1 - Mit optimierten LED-Farben
 
 import json
 import os
@@ -10,49 +9,236 @@ from datetime import datetime
 from pathlib import Path
 
 class Config:
-    """Zentrale Konfiguration - Nur LED-relevante Werte persistent"""
+    """Zentrale Konfiguration mit LED-optimierten Farben"""
     
     # Pfad zur Konfigurations-JSON
     CONFIG_FILE = Path(__file__).parent / "config.json"
     
     # ========================================
-    # HARDWARE-SETTINGS (bleiben hardcoded)
+    # LED-OPTIMIERTE FARBEN (Ihre Auswahl)
     # ========================================
-    LEFT_STRIP_PIN = 18         # GPIO Pin links
-    RIGHT_STRIP_PIN = 13        # GPIO Pin rechts
-    LED_FREQ_HZ = 800000        # Signal-Frequenz
-    LED_DMA_LEFT = 10           # DMA Kanal links
-    LED_DMA_RIGHT = 11          # DMA Kanal rechts
-    LED_INVERT = False          # Signal invertieren
-    LED_CHANNEL_LEFT = 0        # PWM Kanal links
-    LED_CHANNEL_RIGHT = 1       # PWM Kanal rechts
-    AUDIO_RATE = 44100          # Audio Sample Rate
-    AUDIO_CHUNK = 1024          # Audio Buffer
+    COLOR_MAP = {
+        'regenbogen': 'rainbow',      # Spezialfall für Regenbogen-Effekt
+        'gruen': '#00FF00',           # Reines Grün - sehr hell auf LEDs
+        'blau': '#0080FF',            # Helles Blau - gut sichtbar  
+        'rot': '#FF0000',             # Reines Rot - maximale Helligkeit
+        'lila': '#8000FF',            # Helles Lila - gute LED-Darstellung
+        'gelb': '#FFFF00',            # Reines Gelb - sehr hell
+    }
+    
+    # Alternative deutsche Namen (falls gewünscht)
+    COLOR_ALIASES = {
+        'rainbow': 'regenbogen',
+        'green': 'gruen',
+        'blue': 'blau', 
+        'red': 'rot',
+        'purple': 'lila',
+        'yellow': 'gelb'
+    }
+    
+    # Umgekehrtes Mapping für Hex -> Name
+    HEX_TO_NAME = {
+        'rainbow': 'regenbogen',
+        '#00FF00': 'gruen',
+        '#0080FF': 'blau',
+        '#FF0000': 'rot', 
+        '#8000FF': 'lila',
+        '#FFFF00': 'gelb'
+    }
     
     # ========================================
-    # PERSISTENTE WERTE (werden in JSON gespeichert)
+    # HARDWARE-SETTINGS
     # ========================================
-    LEFT_STRIP_LEDS = 10        # Anzahl LEDs links
-    RIGHT_STRIP_LEDS = 10       # Anzahl LEDs rechts
-    VISUALIZATION_MODE = 'audio' # Aktueller Modus
-    AUDIO_CHANNELS = 1          # Audio Kanäle
+    LEFT_STRIP_PIN = 18
+    RIGHT_STRIP_PIN = 13
+    LED_FREQ_HZ = 800000
+    LED_DMA_LEFT = 10
+    LED_DMA_RIGHT = 11
+    LED_INVERT = False
+    LED_CHANNEL_LEFT = 0
+    LED_CHANNEL_RIGHT = 1
+    AUDIO_RATE = 44100
+    AUDIO_CHUNK = 1024
     
-    LED_BRIGHTNESS = 50         # Helligkeit
-    CURRENT_COLOR = '#00FF00'   # Aktuelle Farbe
-    CURRENT_PATTERN = 'rainbow' # Aktuelles Muster
+    # ========================================
+    # PERSISTENTE WERTE
+    # ========================================
+    LEFT_STRIP_LEDS = 10
+    RIGHT_STRIP_LEDS = 10
+    VISUALIZATION_MODE = 'audio'
+    AUDIO_CHANNELS = 1
     
-    AUDIO_SMOOTHING = 0.3       # Audio Glättung
+    LED_BRIGHTNESS = 50
+    CURRENT_COLOR = '#8000FF'   # Standard: Lila (wie in Ihrem Bild "AKTIV")
+    CURRENT_PATTERN = 'regenbogen'
+    
+    AUDIO_SMOOTHING = 0.3
     AMPLITUDE_COLOR_MODE = 'gradient'  # 'gradient' oder 'fixed'
-    FIXED_AMPLITUDE_COLOR = '#00FF00'  # Farbe für Audio-Amplituden
+    
+    # Pattern-Konfiguration
+    STATIC_PATTERN = 'static_pattern_01'
+    
+    # ========================================
+    # FARBMANAGEMENT-METHODEN
+    # ========================================
+    @classmethod
+    def get_current_color_name(cls):
+        """Gibt den deutschen Farbnamen der aktuellen Farbe zurück"""
+        return cls.HEX_TO_NAME.get(cls.CURRENT_COLOR, 'lila')
+    
+    @classmethod
+    def get_current_color_hex(cls):
+        """Gibt den Hex-Wert der aktuellen Farbe zurück"""
+        if cls.CURRENT_COLOR == 'rainbow':
+            return 'rainbow'
+        return cls.CURRENT_COLOR
+    
+    @classmethod
+    def set_color_by_name(cls, color_name):
+        """Setzt Farbe über deutschen Farbnamen"""
+        color_name = color_name.lower()
+        
+        # Prüfe direkte deutsche Namen
+        if color_name in cls.COLOR_MAP:
+            cls.CURRENT_COLOR = cls.COLOR_MAP[color_name]
+            cls.save_to_json()
+            print(f"🎨 Farbe gesetzt: {color_name} ({cls.CURRENT_COLOR})")
+            return True
+        
+        # Prüfe englische Aliase
+        if color_name in cls.COLOR_ALIASES:
+            german_name = cls.COLOR_ALIASES[color_name]
+            cls.CURRENT_COLOR = cls.COLOR_MAP[german_name]
+            cls.save_to_json()
+            print(f"🎨 Farbe gesetzt: {german_name} ({cls.CURRENT_COLOR})")
+            return True
+        
+        # Fehler
+        available_colors = ', '.join(cls.COLOR_MAP.keys())
+        raise ValueError(f"Unbekannte Farbe '{color_name}'. Verfügbar: {available_colors}")
+    
+    @classmethod
+    def set_color_by_hex(cls, hex_color):
+        """Setzt Farbe über Hex-Wert"""
+        hex_color = hex_color.upper()
+        
+        if hex_color.startswith('#') and len(hex_color) == 7:
+            cls.CURRENT_COLOR = hex_color
+            cls.save_to_json()
+            color_name = cls.HEX_TO_NAME.get(hex_color, 'custom')
+            print(f"🎨 Farbe gesetzt: {color_name} ({hex_color})")
+            return True
+        else:
+            raise ValueError(f"Farbe muss Format '#RRGGBB' haben, erhalten: {hex_color}")
+    
+    @classmethod
+    def get_available_colors(cls):
+        """Gibt alle verfügbaren deutschen Farbnamen zurück"""
+        return list(cls.COLOR_MAP.keys())
+    
+    @classmethod
+    def get_color_info(cls):
+        """Gibt detaillierte Farbinformationen zurück"""
+        return {
+            'current_name': cls.get_current_color_name(),
+            'current_hex': cls.get_current_color_hex(),
+            'available_colors': cls.get_available_colors(),
+            'color_map': cls.COLOR_MAP
+        }
+    
+    # ========================================
+    # AUDIO-FARBMETHODEN
+    # ========================================
+    @classmethod
+    def get_audio_color_hex(cls):
+        """Gibt die Farbe für Audio-Visualisierung zurück"""
+        if cls.AMPLITUDE_COLOR_MODE == 'fixed':
+            return cls.CURRENT_COLOR
+        else:
+            return 'gradient'  # Grün-zu-Rot Gradient
+    
+    @classmethod
+    def get_audio_color_name(cls):
+        """Gibt den Farbnamen für Audio-Visualisierung zurück"""
+        if cls.AMPLITUDE_COLOR_MODE == 'fixed':
+            return cls.get_current_color_name()
+        else:
+            return 'gradient'
+    
+    @classmethod
+    def set_audio_color_mode(cls, mode):
+        """Setzt Audio-Farbmodus: 'gradient' oder 'fixed'"""
+        if mode in ['gradient', 'fixed']:
+            cls.AMPLITUDE_COLOR_MODE = mode
+            cls.save_to_json()
+            print(f"🎵 Audio-Farbmodus: {mode}")
+            if mode == 'fixed':
+                print(f"🎵 Audio verwendet jetzt: {cls.get_current_color_name()}")
+        else:
+            raise ValueError("Modus muss 'gradient' oder 'fixed' sein")
+    
+    # ========================================
+    # STATIC-PATTERN FARBMETHODEN
+    # ========================================
+    @classmethod
+    def get_static_color_hex(cls):
+        """Gibt die Farbe für statische Muster zurück"""
+        return cls.CURRENT_COLOR
+    
+    @classmethod
+    def get_static_color_name(cls):
+        """Gibt den Farbnamen für statische Muster zurück"""
+        return cls.get_current_color_name()
+    
+    @classmethod
+    def is_rainbow_mode(cls):
+        """Prüft ob Regenbogen-Modus aktiv ist"""
+        return cls.CURRENT_COLOR == 'rainbow' or cls.get_current_color_name() == 'regenbogen'
+    
+    # ========================================
+    # PATTERN-METHODEN
+    # ========================================
+    @classmethod
+    def set_pattern(cls, pattern_name):
+        """Setzt das statische Muster"""
+        valid_patterns = [
+            'static_pattern_01',  # Einfacher Puls
+            'static_pattern_02',  # Ping-Pong
+            'static_pattern_03',  # Dual-Puls
+            'static_pattern_04'   # Matrix-Regen
+        ]
+        
+        if pattern_name in valid_patterns:
+            cls.STATIC_PATTERN = pattern_name
+            cls.save_to_json()
+            print(f"🎨 Muster gesetzt: {pattern_name}")
+        else:
+            raise ValueError(f"Ungültiges Muster: {pattern_name}")
+    
+    @classmethod
+    def get_pattern_info(cls):
+        """Gibt Muster-Informationen zurück"""
+        pattern_names = {
+            'static_pattern_01': 'Einfacher Puls',
+            'static_pattern_02': 'Ping-Pong',
+            'static_pattern_03': 'Dual-Puls', 
+            'static_pattern_04': 'Matrix-Regen'
+        }
+        
+        return {
+            'current_pattern': cls.STATIC_PATTERN,
+            'current_name': pattern_names.get(cls.STATIC_PATTERN, 'Unbekannt'),
+            'available_patterns': pattern_names
+        }
     
     # ========================================
     # JSON LADEN/SPEICHERN
     # ========================================
     @classmethod
     def load_from_json(cls):
-        """Lädt nur die LED-relevanten Werte aus JSON"""
+        """Lädt Konfiguration aus JSON"""
         if not cls.CONFIG_FILE.exists():
-            print(f"📄 Erstelle neue config.json...")
+            print("📄 Erstelle neue config.json...")
             cls.save_to_json()
             return
             
@@ -60,7 +246,7 @@ class Config:
             with open(cls.CONFIG_FILE, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             
-            # Lade die Werte (genau wie in deiner JSON-Struktur)
+            # Lade Werte
             cls.LEFT_STRIP_LEDS = data.get('left_strip_leds', cls.LEFT_STRIP_LEDS)
             cls.RIGHT_STRIP_LEDS = data.get('right_strip_leds', cls.RIGHT_STRIP_LEDS)
             cls.VISUALIZATION_MODE = data.get('visualization_mode', cls.VISUALIZATION_MODE)
@@ -72,22 +258,26 @@ class Config:
             
             cls.AUDIO_SMOOTHING = data.get('audio_smoothing', cls.AUDIO_SMOOTHING)
             cls.AMPLITUDE_COLOR_MODE = data.get('amplitude_color_mode', cls.AMPLITUDE_COLOR_MODE)
-            cls.FIXED_AMPLITUDE_COLOR = data.get('fixed_amplitude_color', cls.FIXED_AMPLITUDE_COLOR)
+            cls.STATIC_PATTERN = data.get('static_pattern', cls.STATIC_PATTERN)
             
-            print(f"✅ Config geladen: {cls.LEFT_STRIP_LEDS}L + {cls.RIGHT_STRIP_LEDS}R LEDs")
+            # Validiere Farbe
+            if cls.CURRENT_COLOR not in cls.HEX_TO_NAME and cls.CURRENT_COLOR != 'rainbow':
+                print(f"⚠️ Unbekannte Farbe {cls.CURRENT_COLOR}, setze auf Lila")
+                cls.CURRENT_COLOR = '#8000FF'
+            
+            color_name = cls.get_current_color_name()
+            print(f"✅ Config geladen: {cls.LEFT_STRIP_LEDS}L + {cls.RIGHT_STRIP_LEDS}R LEDs, Farbe: {color_name}")
             
         except Exception as e:
-            print(f"⚠️  Fehler beim Laden: {e}")
+            print(f"⚠️ Fehler beim Laden: {e}")
             print("📄 Verwende Standard-Werte...")
     
     @classmethod
     def save_to_json(cls):
-        """Speichert nur die LED-relevanten Werte in JSON"""
+        """Speichert Konfiguration in JSON"""
         try:
-            # Erstelle Ordner falls nicht vorhanden
             cls.CONFIG_FILE.parent.mkdir(exist_ok=True)
             
-            # Minimale JSON-Struktur (wie deine Vorlage)
             data = {
                 "left_strip_leds": cls.LEFT_STRIP_LEDS,
                 "right_strip_leds": cls.RIGHT_STRIP_LEDS,
@@ -100,44 +290,28 @@ class Config:
                 
                 "audio_smoothing": cls.AUDIO_SMOOTHING,
                 "amplitude_color_mode": cls.AMPLITUDE_COLOR_MODE,
-                "fixed_amplitude_color": cls.FIXED_AMPLITUDE_COLOR
+                "static_pattern": cls.STATIC_PATTERN,
+                
+                # Zusätzliche Info für Debugging
+                "_color_name": cls.get_current_color_name(),
+                "_last_updated": datetime.now().isoformat()
             }
             
             with open(cls.CONFIG_FILE, 'w', encoding='utf-8') as f:
                 json.dump(data, f, indent=2, ensure_ascii=False)
             
-            print(f"💾 Konfiguration gespeichert")
+            print("💾 Konfiguration gespeichert")
             
         except Exception as e:
-            print(f"❌ Fehler beim Speichern der config.json: {e}")
+            print(f"❌ Fehler beim Speichern: {e}")
     
     # ========================================
-    # SETTER-METHODEN (speichern automatisch)
+    # ERWEITERTE SETTER
     # ========================================
-    @classmethod
-    def set_left_strip_leds(cls, count):
-        """Ändert Anzahl LEDs für linken Strip"""
-        if 1 <= count <= 300:
-            cls.LEFT_STRIP_LEDS = count
-            cls.save_to_json()
-            print(f"🎛️  Linker Strip: {count} LEDs")
-        else:
-            raise ValueError(f"LED-Anzahl muss zwischen 1 und 300 sein!")
-    
-    @classmethod
-    def set_right_strip_leds(cls, count):
-        """Ändert Anzahl LEDs für rechten Strip"""
-        if 1 <= count <= 300:
-            cls.RIGHT_STRIP_LEDS = count
-            cls.save_to_json()
-            print(f"🎛️  Rechter Strip: {count} LEDs")
-        else:
-            raise ValueError(f"LED-Anzahl muss zwischen 1 und 300 sein!")
-    
     @classmethod
     def set_visualization_mode(cls, mode):
         """Ändert Visualisierungsmodus"""
-        valid_modes = ['audio', 'pattern', 'static']
+        valid_modes = ['audio', 'pattern', 'off']
         if mode in valid_modes:
             cls.VISUALIZATION_MODE = mode
             cls.save_to_json()
@@ -146,54 +320,14 @@ class Config:
             raise ValueError(f"Modus muss einer von {valid_modes} sein!")
     
     @classmethod
-    def set_current_color(cls, color):
-        """Setzt aktuelle Farbe"""
-        if color.startswith('#') and len(color) == 7:
-            cls.CURRENT_COLOR = color
-            cls.save_to_json()
-            print(f"🎨 Farbe: {color}")
-        else:
-            raise ValueError(f"Farbe muss Format '#RRGGBB' haben!")
-    
-    @classmethod
-    def set_amplitude_color(cls, color):
-        """Setzt Audio-Amplituden-Farbe"""
-        if color.startswith('#') and len(color) == 7:
-            cls.FIXED_AMPLITUDE_COLOR = color
-            cls.AMPLITUDE_COLOR_MODE = 'fixed'
-            cls.save_to_json()
-            print(f"🎵 Audio-Farbe: {color}")
-        else:
-            raise ValueError(f"Farbe muss Format '#RRGGBB' haben!")
-    
-    @classmethod
     def set_brightness(cls, brightness):
-        """Setzt LED-Helligkeit"""
+        """Setzt LED-Helligkeit (0-255)"""
         if 0 <= brightness <= 255:
             cls.LED_BRIGHTNESS = brightness
             cls.save_to_json()
             print(f"💡 Helligkeit: {brightness}/255")
         else:
-            raise ValueError(f"Helligkeit muss zwischen 0 und 255 sein!")
-    
-    # ========================================
-    # QUICK-CONFIGS
-    # ========================================
-    @classmethod
-    def quick_equal_strips(cls, count=10):
-        """Beide Strips gleich groß"""
-        cls.LEFT_STRIP_LEDS = count
-        cls.RIGHT_STRIP_LEDS = count
-        cls.save_to_json()
-        print(f"✅ Beide Strips: {count} LEDs")
-    
-    @classmethod
-    def quick_different_strips(cls, left=12, right=8):
-        """Verschiedene Strip-Größen"""
-        cls.LEFT_STRIP_LEDS = left
-        cls.RIGHT_STRIP_LEDS = right
-        cls.save_to_json()
-        print(f"✅ Links: {left} LEDs, Rechts: {right} LEDs")
+            raise ValueError("Helligkeit muss zwischen 0 und 255 sein!")
     
     # ========================================
     # INFO & DEBUG
@@ -202,61 +336,32 @@ class Config:
     def print_config(cls):
         """Zeigt aktuelle Konfiguration"""
         print("=" * 50)
-        print("🎛️  PiVoltMeter Konfiguration")
+        print("🎛️ PiVoltMeter Konfiguration")
         print("=" * 50)
         print(f"📍 Linker Strip:  {cls.LEFT_STRIP_LEDS} LEDs an GPIO {cls.LEFT_STRIP_PIN}")
         print(f"📍 Rechter Strip: {cls.RIGHT_STRIP_LEDS} LEDs an GPIO {cls.RIGHT_STRIP_PIN}")
         print(f"💡 Helligkeit:    {cls.LED_BRIGHTNESS}/255")
         print(f"🎨 Modus:         {cls.VISUALIZATION_MODE}")
-        print(f"🎨 Farbe:         {cls.CURRENT_COLOR}")
-        print(f"🎵 Audio-Farbe:   {cls.FIXED_AMPLITUDE_COLOR} ({cls.AMPLITUDE_COLOR_MODE})")
+        print(f"🎨 Farbe:         {cls.get_current_color_name()} ({cls.CURRENT_COLOR})")
+        print(f"🎵 Audio-Modus:   {cls.AMPLITUDE_COLOR_MODE}")
+        
+        if cls.VISUALIZATION_MODE == 'static':
+            pattern_info = cls.get_pattern_info()
+            print(f"🎭 Muster:        {pattern_info['current_name']}")
+        
         print(f"📂 Config-Datei:  {cls.CONFIG_FILE}")
+        print("=" * 50)
+        
+        # Zeige verfügbare Farben
+        print("🎨 Verfügbare Farben:")
+        for name, hex_val in cls.COLOR_MAP.items():
+            active = "✓" if cls.get_current_color_name() == name else " "
+            print(f"  {active} {name}: {hex_val}")
         print("=" * 50)
     
     @classmethod
-    def get_max_leds(cls):
-        """Größere der beiden Strip-Größen"""
-        return max(cls.LEFT_STRIP_LEDS, cls.RIGHT_STRIP_LEDS)
-    
-    @classmethod
-    def get_ip_addresses(cls):
-        """Ermittelt alle verfügbaren IP-Adressen des Pi"""
-        ip_addresses = []
-        try:
-            import subprocess
-            # Alle aktiven Netzwerk-Interfaces abfragen
-            result = subprocess.run(['hostname', '-I'], capture_output=True, text=True)
-            if result.returncode == 0:
-                # Alle IPs aus der Ausgabe extrahieren
-                ips = result.stdout.strip().split()
-                for ip in ips:
-                    if ip and not ip.startswith('127.'):  # Localhost ausschließen
-                        ip_addresses.append(ip)
-            
-            # Fallback: Socket-Methode
-            if not ip_addresses:
-                try:
-                    # Verbindung zu externem Server simulieren um lokale IP zu finden
-                    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-                        s.connect(("8.8.8.8", 80))  # Google DNS
-                        local_ip = s.getsockname()[0]
-                        if local_ip and local_ip != '127.0.0.1':
-                            ip_addresses.append(local_ip)
-                except:
-                    pass
-                    
-        except Exception as e:
-            print(f"⚠️  IP-Adress-Erkennung fehlgeschlagen: {e}")
-            
-        # Standard-Fallback
-        if not ip_addresses:
-            ip_addresses = ["192.168.x.x"]
-            
-        return ip_addresses
-
-    @classmethod
     def to_json(cls):
-        """Gibt aktuelle Konfiguration als Dictionary zurück (für Templates)"""
+        """Gibt aktuelle Konfiguration als Dictionary für Templates zurück"""
         try:
             return {
                 "left_strip_leds": cls.LEFT_STRIP_LEDS,
@@ -265,124 +370,39 @@ class Config:
                 "audio_channels": cls.AUDIO_CHANNELS,
                 "led_brightness": cls.LED_BRIGHTNESS,
                 "current_color": cls.CURRENT_COLOR,
+                "current_color_name": cls.get_current_color_name(),
                 "current_pattern": cls.CURRENT_PATTERN,
-                "audio_smoothing": float(cls.AUDIO_SMOOTHING),  # Sicherstellen dass es float ist
+                "audio_smoothing": float(cls.AUDIO_SMOOTHING),
                 "amplitude_color_mode": cls.AMPLITUDE_COLOR_MODE,
-                "fixed_amplitude_color": cls.FIXED_AMPLITUDE_COLOR,
+                "static_pattern": cls.STATIC_PATTERN,
                 
-                # Zusätzliche nützliche Werte für Templates
-                "max_leds": cls.get_max_leds(),
-                "total_leds": cls.LEFT_STRIP_LEDS + cls.RIGHT_STRIP_LEDS,
-                "different_strip_sizes": cls.LEFT_STRIP_LEDS != cls.RIGHT_STRIP_LEDS,
+                # Farbinformationen für Frontend
+                "color_info": cls.get_color_info(),
+                "pattern_info": cls.get_pattern_info(),
+                "is_rainbow": cls.is_rainbow_mode(),
                 
-                # Hardware-Info (nur für Anzeige)
-                "left_strip_pin": cls.LEFT_STRIP_PIN,
-                "right_strip_pin": cls.RIGHT_STRIP_PIN,
-                
-                # JavaScript-kompatible Werte (für altes Template)
-                "led_color": cls._get_color_name_from_hex(cls.CURRENT_COLOR),
-                "audio_pattern": cls._get_current_audio_pattern(),
-                "static_pattern": cls._get_current_static_pattern(),
-                
-                # Display-Informationen für HTML-Template
-                "display": {
-                    "ip_addresses": cls.get_ip_addresses(),
-                    "hostname": socket.gethostname(),
-                    "port": 5000,
-                    # JavaScript erwartet diese Namen für UI-Updates
-                    "mode_name": cls._get_mode_display_name(),
-                    "color_name": cls._get_color_display_name(),
-                    "pattern_name": cls._get_pattern_display_name()
+                # Hardware-Info
+                "hardware": {
+                    "left_strip_pin": cls.LEFT_STRIP_PIN,
+                    "right_strip_pin": cls.RIGHT_STRIP_PIN,
+                    "max_leds": max(cls.LEFT_STRIP_LEDS, cls.RIGHT_STRIP_LEDS),
+                    "total_leds": cls.LEFT_STRIP_LEDS + cls.RIGHT_STRIP_LEDS
                 }
             }
         except Exception as e:
-            print(f"⚠️  Fehler bei to_json(): {e}")
-            # Fallback - minimal dictionary
+            print(f"⚠️ Fehler bei to_json(): {e}")
             return {
                 "left_strip_leds": 10,
                 "right_strip_leds": 10,
                 "visualization_mode": "audio",
-                "current_color": "#00FF00",
-                "led_brightness": 50,
-                "led_color": "green",
-                "audio_pattern": "audio_pattern_01",
-                "static_pattern": "static_pattern_01",
-                "display": {
-                    "ip_addresses": ["192.168.x.x"],
-                    "hostname": "raspberrypi",
-                    "port": 5000,
-                    "mode_name": "Audio",
-                    "color_name": "Grün", 
-                    "pattern_name": "Spektrum"
-                }
+                "current_color": "#8000FF",
+                "current_color_name": "lila",
+                "led_brightness": 50
             }
-    
-    @classmethod
-    def _get_color_name_from_hex(cls, hex_color):
-        """Konvertiert Hex-Farbe zu Namen für JavaScript"""
-        color_map = {
-            "#00FF00": "green",
-            "#FF0000": "red", 
-            "#0000FF": "blue",
-            "#FFFF00": "yellow",
-            "#FF00FF": "purple",
-            "#00FFFF": "cyan",
-            "rainbow": "rainbow"
-        }
-        return color_map.get(hex_color, "green")
-    
-    @classmethod
-    def _get_current_audio_pattern(cls):
-        """Gibt aktuelles Audio-Pattern für JavaScript zurück"""
-        # Standard Audio-Pattern basierend auf Config
-        return "audio_pattern_01"  # Kann später erweitert werden
-    
-    @classmethod
-    def _get_current_static_pattern(cls):
-        """Gibt aktuelles Static-Pattern für JavaScript zurück"""
-        # Standard Static-Pattern basierend auf Config
-        return "static_pattern_01"  # Kann später erweitert werden
-    
-    @classmethod
-    def _get_mode_display_name(cls):
-        """Gibt benutzerfreundlichen Namen für Visualisierungsmodus zurück"""
-        mode_names = {
-            "audio": "Audio",
-            "static": "Statisch", 
-            "pattern": "Muster",
-            "off": "Aus"
-        }
-        return mode_names.get(cls.VISUALIZATION_MODE, "Audio")
-    
-    @classmethod
-    def _get_color_display_name(cls):
-        """Gibt benutzerfreundlichen Namen für Farbe zurück"""
-        color_names = {
-            "#00FF00": "Grün",
-            "#FF0000": "Rot",
-            "#0000FF": "Blau", 
-            "#FFFF00": "Gelb",
-            "#FF00FF": "Lila",
-            "#00FFFF": "Cyan",
-            "rainbow": "Regenbogen"
-        }
-        return color_names.get(cls.CURRENT_COLOR, "Regenbogen")
-    
-    @classmethod
-    def _get_pattern_display_name(cls):
-        """Gibt benutzerfreundlichen Namen für Pattern zurück"""
-        if cls.VISUALIZATION_MODE == "audio":
-            return "Spektrum"
-        elif cls.VISUALIZATION_MODE == "static":
-            return "Statisch"
-        else:
-            return "Standard"
-
 
 # ========================================
-# AUTOMATISCHES LADEN BEIM IMPORT
+# AUTOMATISCHES LADEN
 # ========================================
-# Konfiguration automatisch beim Import laden
 Config.load_from_json()
 
 # Validierung
@@ -392,4 +412,4 @@ if Config.LEFT_STRIP_LEDS <= 0 or Config.RIGHT_STRIP_LEDS <= 0:
 if Config.LEFT_STRIP_PIN == Config.RIGHT_STRIP_PIN:
     raise ValueError("Beide Strips können nicht den gleichen Pin verwenden!")
 
-print(f"🚀 Config geladen: {Config.LEFT_STRIP_LEDS}L + {Config.RIGHT_STRIP_LEDS}R LEDs")
+print(f"🚀 Config geladen: {Config.LEFT_STRIP_LEDS}L + {Config.RIGHT_STRIP_LEDS}R LEDs, Farbe: {Config.get_current_color_name()}")

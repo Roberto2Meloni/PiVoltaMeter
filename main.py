@@ -74,10 +74,10 @@ def startup_animation(left_strip, right_strip):
         time.sleep(0.25)
     
     # Alle LEDs ausschalten
-    clear_leds(left_strip, right_strip)
+    clear_all_leds(left_strip, right_strip)
     print("✅ Start-Animation abgeschlossen")
 
-def clear_leds(left_strip, right_strip):
+def clear_all_leds(left_strip, right_strip):
     """Schaltet alle LEDs aus"""
     for i in range(Config.LEFT_STRIP_LEDS):
         left_strip.setPixelColor(i, Color(0, 0, 0))
@@ -107,20 +107,43 @@ def set_all_color(left_strip, right_strip, color_hex):
     right_strip.show()
     print(f"🎨 Alle LEDs auf {color_hex}")
 
+
 def audio_visualization_worker(left_strip, right_strip):
-    """Audio-Visualisierung in separatem Thread (Platzhalter)"""
+    """Audio-Visualisierung in separatem Thread"""
     print("🎵 Audio-Visualisierung startet...")
     
-    # TODO: Hier kommt später led/audio_viz.py Import
-    # Für jetzt: einfacher Platzhalter
     try:
-        while True:
-            # Placeholder für Audio-Visualisierung
-            # Wird später durch led/audio_viz.py ersetzt
-            time.sleep(1)
+        # Erstelle Audio-Visualizer
+        audio_viz = create_audio_visualizer(left_strip, right_strip)
+        
+        # Starte Audio-Visualisierung (blockierend)
+        audio_viz.start_audio_visualization()
+        
     except KeyboardInterrupt:
         print("🎵 Audio-Visualisierung beendet")
-        clear_leds(left_strip, right_strip)
+        clear_all_leds(left_strip, right_strip)
+    except Exception as e:
+        print(f"🎵 Audio-Visualisierung Fehler: {e}")
+
+def static_visualization_worker(left_strip, right_strip):
+    """Statische Muster-Visualisierung in separatem Thread"""
+    print("🎨 Muster-Visualisierung startet...")
+    
+    try:
+        # Erstelle Pattern-Visualizer
+        pattern_viz = create_pattern_visualizer(left_strip, right_strip)
+        
+        # Hauptschleife für Muster-Updates
+        while True:
+            pattern_viz.update_pattern()
+            time.sleep(0.1)  # Update-Rate: 10 FPS
+            
+    except KeyboardInterrupt:
+        print("🎨 Muster-Visualisierung beendet")
+        clear_all_leds(left_strip, right_strip)
+    except Exception as e:
+        print(f"🎨 Muster-Visualisierung Fehler: {e}")
+
 
 def start_flask_server():
     """Startet den Flask-Webserver"""
@@ -161,6 +184,16 @@ def main():
             )
             audio_thread.start()
             print("🎵 Audio-Thread gestartet")
+
+        # Muster-Visualisierung starten (falls aktiviert)
+        if Config.VISUALIZATION_MODE == 'static':
+            static_thread = threading.Thread(
+                target=static_visualization_worker, 
+                args=(left_strip, right_strip),
+                daemon=True
+            )
+            static_thread.start()
+            print("🎵 Static-Thread gestartet")
         
         # Global verfügbar machen für Flask
         import builtins
@@ -172,16 +205,16 @@ def main():
         
     except KeyboardInterrupt:
         print("\n🛑 Programm beendet durch Benutzer")
-        clear_leds(left_strip, right_strip)
+        clear_all_leds(left_strip, right_strip)
     except Exception as e:
         print(f"❌ Unerwarteter Fehler: {e}")
-        clear_leds(left_strip, right_strip)
+        clear_all_leds(left_strip, right_strip)
         import traceback
         traceback.print_exc()
     finally:
         # Aufräumen
         try:
-            clear_leds(left_strip, right_strip)
+            clear_all_leds(left_strip, right_strip)
             print("🧹 LEDs ausgeschaltet")
         except:
             pass

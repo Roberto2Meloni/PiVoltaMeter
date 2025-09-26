@@ -38,27 +38,31 @@ def set_all_leds_color(color_hex):
     """Setzt alle LEDs auf eine Farbe (beide Strips)"""
     left_strip, right_strip = get_led_strips()
     color = hex_to_color(color_hex)
-    
-    # Beide Strips setzen
-    for i in range(Config.LEFT_STRIP_LEDS):  # links
-        left_strip.setPixelColor(i, color)
-    for i in range(Config.RIGHT_STRIP_LEDS):  # rechts
-        right_strip.setPixelColor(i, color)
-    
-    left_strip.show()
-    right_strip.show()
-    
+
+    if Config.VISUALIZATION_MODE == "off":
+        print("Passe, da VISUALIZATION_MODE off ist")
+        clear_all_leds()
+    else:
+        # Beide Strips setzen
+        for i in range(Config.LEFT_STRIP_LEDS):  # links
+            left_strip.setPixelColor(i, color)
+        for i in range(Config.RIGHT_STRIP_LEDS):  # rechts
+            right_strip.setPixelColor(i, color)
+        
+        left_strip.show()
+        right_strip.show()
 
 
 
 def clear_all_leds():
     """Schaltet alle LEDs aus"""
     left_strip, right_strip = get_led_strips()
-    
-    for i in range(Config.LED_PER_STRIP):
+    for i in range(Config.LEFT_STRIP_LEDS):
         left_strip.setPixelColor(i, Color(0, 0, 0))
+
+    for i in range(Config.RIGHT_STRIP_LEDS):
         right_strip.setPixelColor(i, Color(0, 0, 0))
-    
+        
     left_strip.show()
     right_strip.show()
 
@@ -141,25 +145,31 @@ def index():
 def set_color():
     """API: LEDs auf Farbe setzen"""
     try:
-        print("--------------Farb Weschel empfangen-----------")
+        print("--------------Farb Wechsel empfangen-----------")
         data = request.get_json()
-        color = data.get('hex_code',)
+        color = data.get('hex_code')
         print(f"Farbe = {color}")
         print(20 * "----")
         print(data)
         print(20 * "----")
         
-        # Farbe setzen und in Config speichern
+        # LÖSUNG 1: Direkte Zuweisung (einfach)
+        # Config.CURRENT_COLOR = color
+        
+        # LÖSUNG 2: Verwende die Config-Methode (empfohlen)
+        Config.set_color_by_hex(color)
+        
+        # LEDs setzen
         set_all_leds_color(color)
-        Config.set_current_color(color)
-        Config.set_visualization_mode('static')
         
         return jsonify({
             "status": "success", 
             "message": f"LEDs auf {color} gesetzt"
         })
     except Exception as e:
-        print(f"Fehle beim Farbwechsel {e}")
+        print(f"Fehler beim Farbwechsel: {e}")
+        import traceback
+        traceback.print_exc()  # Zeigt vollständigen Fehler-Stack
         return jsonify({"status": "error", "message": f"Fehler: {str(e)}"}), 500
 
 @app.route('/set_amplitude_color', methods=['POST'])
@@ -205,14 +215,25 @@ def turn_off():
     except Exception as e:
         return jsonify({"status": "error", "message": f"Fehler: {str(e)}"}), 500
 
+
 @app.route('/set_visualization_mode', methods=['POST'])
 def set_visualization_mode():
     """API: Visualisierungsmodus setzen (für HTML-Template)"""
     try:
         data = request.get_json()
         mode = data.get('mode', 'audio')
+        print(f"Der neue Modusl lautet: {mode}")
         
-        Config.set_visualization_mode(mode)
+        Config.VISUALIZATION_MODE = mode
+
+
+        if mode == "off":
+            print("Schalt LED aus, da mode off ist")
+            clear_all_leds()
+        
+        if mode =="pattern":
+            print("Weschsle wieder auf Museter mit Farben")
+            set_all_leds_color(Config.CURRENT_COLOR)
         
         return jsonify({
             "status": "success", 
