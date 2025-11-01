@@ -27,17 +27,43 @@
       </div>
       <div class="status-container">
         <div class="status-item">
-          <i class="fas fa-sliders-h"></i> Modus: <span id="current-mode">Audio</span>
+          <i class="fas fa-sliders-h"></i> Modus: <span id="current-mode">{{ config.visualization_mode|default('Audio') }}</span>
         </div>
         <div class="status-item">
-          <i class="fas fa-fill-drip"></i> Farbe: <span id="current-color">Regenbogen</span>
+          <i class="fas fa-fill-drip"></i> Farbe: <span id="current-color">{{ config.current_color_name|default('Regenbogen') }}</span>
         </div>
         <div class="status-item">
           <i class="fas fa-shapes"></i> Muster: <span id="current-pattern">Spektrum</span>
         </div>
-        <!-- Neue IP-Adress-Anzeige -->
-        <div class="status-item">
-          <i class="fas fa-network-wired"></i> Netzwerk: <span id="ip-addresses">Wird geladen...</span>
+        <!-- Erweiterte Netzwerk-Anzeige mit Hostname und IP -->
+        <div class="status-item network-info">
+          <div class="network-header">
+            <i class="fas fa-network-wired"></i> Netzwerk
+          </div>
+          <div class="network-details">
+            <div class="network-row">
+              <i class="fas fa-server"></i>
+              <span class="network-label">Hostname:</span>
+              <span id="device-hostname" class="network-value">{{ config.network.hostname|default('Wird geladen...') }}</span>
+            </div>
+            <div class="network-row">
+              <i class="fas fa-globe"></i>
+              <span class="network-label">IP-Adresse:</span>
+              <span id="device-ip" class="network-value">{{ config.network.ip|default('Wird geladen...') }}</span>
+            </div>
+            <div class="network-row">
+              <i class="fas fa-link"></i>
+              <span class="network-label">URL:</span>
+              <a href="{{ config.network.web_url|default('#') }}" 
+                 id="device-url" 
+                 class="network-link"
+                 target="_blank">{{ config.network.web_url|default('http://...') }}</a>
+            </div>
+          </div>
+          <!-- Copy-Button für die URL -->
+          <button class="copy-url-btn" onclick="copyToClipboard('{{ config.network.web_url|default('') }}')">
+            <i class="fas fa-copy"></i> URL kopieren
+          </button>
         </div>
       </div>
     </div>
@@ -47,19 +73,21 @@
           <button
             id="audio-mode"
             onclick="setVisualizationMode('audio', '{{ url_for('set_visualization_mode') }}')"
-            class="active"
+            class="{% if config.visualization_mode == 'audio' %}active{% endif %}"
           >
             <i class="fas fa-music"></i> Audio
           </button>
           <button
             id="pattern-mode"
             onclick="setVisualizationMode('pattern', '{{ url_for('set_visualization_mode') }}')"
+            class="{% if config.visualization_mode == 'pattern' %}active{% endif %}"
           >
             <i class="fas fa-palette"></i> Muster
           </button>
           <button
             id="off-mode"
             onclick="setVisualizationMode('off', '{{ url_for('set_visualization_mode') }}')"
+            class="{% if config.visualization_mode == 'off' %}active{% endif %}"
           >
             <i class="fas fa-power-off"></i> Off
           </button>
@@ -70,7 +98,7 @@
       <div id="color-container" class="card">
         <h2><i class="fas fa-fill-drip"></i> Farbauswahl</h2>
         <div class="color-controls">
-          <button id="color_rainbow" onclick="setColor('rainbow', 'rainbow','{{ url_for('set_color') }}')" class="color-btn active" style="background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet);">
+          <button id="color_rainbow" onclick="setColor('rainbow', 'rainbow','{{ url_for('set_color') }}')" class="color-btn" style="background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet);">
             <i class="fas fa-rainbow"></i> Regenbogen
           </button>
           <button id="color_green" onclick="setColor('green','#2ecc71', '{{ url_for('set_color') }}')" class="color-btn" style="background-color: #2ecc71;">
@@ -159,6 +187,27 @@
     <script>
       // Die vom Server übergebene Konfiguration
       const initialConfig = {{ config|tojson|safe }};
+      
+      // Funktion zum Kopieren der URL in die Zwischenablage
+      function copyToClipboard(text) {
+        if (!text) return;
+        
+        navigator.clipboard.writeText(text).then(() => {
+          // Zeige Feedback
+          const btn = event.target.closest('button');
+          const originalHTML = btn.innerHTML;
+          btn.innerHTML = '<i class="fas fa-check"></i> Kopiert!';
+          btn.style.backgroundColor = '#27ae60';
+          
+          setTimeout(() => {
+            btn.innerHTML = originalHTML;
+            btn.style.backgroundColor = '';
+          }, 2000);
+        }).catch(err => {
+          console.error('Fehler beim Kopieren:', err);
+          alert('Fehler beim Kopieren der URL');
+        });
+      }
     </script>
     
     <!-- Statischer Link für lokale Entwicklung -->

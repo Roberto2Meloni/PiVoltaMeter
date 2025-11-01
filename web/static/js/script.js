@@ -14,7 +14,7 @@ function updateUIFromConfig(config) {
     }
     
     // Modus-Buttons aktualisieren
-    document.querySelectorAll('#audio-mode, #static-mode, #off-mode').forEach(btn => {
+    document.querySelectorAll('#audio-mode, #pattern-mode, #off-mode').forEach(btn => {
         btn.classList.remove('active');
     });
     
@@ -55,7 +55,7 @@ function updateUIFromConfig(config) {
             let currentPatternId = '';
             if (config.visualization_mode === 'audio') {
                 currentPatternId = config.audio_pattern;
-            } else if (config.visualization_mode === 'static') {
+            } else if (config.visualization_mode === 'pattern') {
                 currentPatternId = config.static_pattern;
             }
             
@@ -72,7 +72,7 @@ function updateUIFromConfig(config) {
 // Visualisierungsmodus einstellen
 function setVisualizationMode(mode, url) {
     // Entferne aktiven Status von allen Modus-Buttons
-    document.querySelectorAll('#audio-mode, #static-mode, #off-mode').forEach(btn => {
+    document.querySelectorAll('#audio-mode, #pattern-mode, #off-mode').forEach(btn => {
         btn.classList.remove('active');
     });
 
@@ -111,7 +111,7 @@ function setPattern(pattern_name, url) {
     console.log("setPattern aufgerufen mit:", pattern_name, url);
     
     // Aktiven Status von allen Muster-Buttons im aktuellen Modus entfernen
-    const activeMode = document.querySelector('#audio-mode.active, #static-mode.active, #off-mode.active').id.replace('-mode', '');
+    const activeMode = document.querySelector('#audio-mode.active, #pattern-mode.active, #off-mode.active').id.replace('-mode', '');
     console.log("Aktiver Modus:", activeMode);
     
     if (activeMode !== 'off') {

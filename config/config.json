@@ -1,14 +1,14 @@
 {
   "left_strip_leds": 20,
   "right_strip_leds": 20,
-  "visualization_mode": "off",
+  "visualization_mode": "pattern",
   "audio_channels": 1,
   "led_brightness": 50,
-  "current_color": "#E74C3C",
+  "current_color": "#9B59B6",
   "current_pattern": "rainbow",
   "audio_smoothing": 0.3,
   "amplitude_color_mode": "gradient",
   "static_pattern": "static_pattern_01",
   "_color_name": "lila",
-  "_last_updated": "2025-09-26T21:16:30.572846"
+  "_last_updated": "2025-11-01T13:37:37.908963"
 }

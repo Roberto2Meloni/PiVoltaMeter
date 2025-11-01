@@ -1,6 +1,6 @@
 # LED-optimierte Konfiguration für PiVoltMeter
 # Datum: 24.09.2025
-# Version: 2.1 - Mit optimierten LED-Farben
+# Version: 2.2 - Mit IP-Adresse-Ermittlung
 
 import json
 import os
@@ -13,6 +13,12 @@ class Config:
     
     # Pfad zur Konfigurations-JSON
     CONFIG_FILE = Path(__file__).parent / "config.json"
+    
+    # ========================================
+    # NETZWERK-INFORMATION
+    # ========================================
+    DEVICE_IP = None
+    DEVICE_HOSTNAME = None
     
     # ========================================
     # LED-OPTIMIERTE FARBEN (Ihre Auswahl)
@@ -77,6 +83,61 @@ class Config:
     
     # Pattern-Konfiguration
     STATIC_PATTERN = 'static_pattern_01'
+    
+    # ========================================
+    # NETZWERK-METHODEN
+    # ========================================
+    @classmethod
+    def get_ip_address(cls):
+        """Ermittelt die IP-Adresse des Geräts"""
+        try:
+            # Methode 1: Verbindung zu externem Server simulieren (ermittelt lokale IP)
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.settimeout(0)
+            try:
+                # Verbinde zu Google DNS (8.8.8.8) - keine echte Verbindung wird aufgebaut
+                s.connect(('8.8.8.8', 80))
+                ip = s.getsockname()[0]
+            except Exception:
+                ip = '127.0.0.1'
+            finally:
+                s.close()
+            return ip
+        except Exception as e:
+            print(f"⚠️ Fehler bei IP-Ermittlung: {e}")
+            # Fallback: Hostname-basierte IP
+            try:
+                return socket.gethostbyname(socket.gethostname())
+            except:
+                return '127.0.0.1'
+    
+    @classmethod
+    def get_hostname(cls):
+        """Ermittelt den Hostname des Geräts"""
+        try:
+            return socket.gethostname()
+        except Exception as e:
+            print(f"⚠️ Fehler bei Hostname-Ermittlung: {e}")
+            return 'unknown'
+    
+    @classmethod
+    def update_network_info(cls):
+        """Aktualisiert die Netzwerk-Informationen"""
+        cls.DEVICE_IP = cls.get_ip_address()
+        cls.DEVICE_HOSTNAME = cls.get_hostname()
+        print(f"🌐 Netzwerk-Info: {cls.DEVICE_HOSTNAME} @ {cls.DEVICE_IP}")
+    
+    @classmethod
+    def get_network_info(cls):
+        """Gibt Netzwerk-Informationen zurück"""
+        if cls.DEVICE_IP is None:
+            cls.update_network_info()
+        
+        return {
+            'ip': cls.DEVICE_IP,
+            'hostname': cls.DEVICE_HOSTNAME,
+            'web_url': f'http://{cls.DEVICE_IP}:5000'
+        }
     
     # ========================================
     # FARBMANAGEMENT-METHODEN
@@ -335,9 +396,16 @@ class Config:
     @classmethod
     def print_config(cls):
         """Zeigt aktuelle Konfiguration"""
+        # Aktualisiere Netzwerk-Info
+        cls.update_network_info()
+        
         print("=" * 50)
         print("🎛️ PiVoltMeter Konfiguration")
         print("=" * 50)
+        print(f"🌐 Hostname:      {cls.DEVICE_HOSTNAME}")
+        print(f"🌐 IP-Adresse:    {cls.DEVICE_IP}")
+        print(f"🌐 Web-Interface: http://{cls.DEVICE_IP}:5000")
+        print("-" * 50)
         print(f"📍 Linker Strip:  {cls.LEFT_STRIP_LEDS} LEDs an GPIO {cls.LEFT_STRIP_PIN}")
         print(f"📍 Rechter Strip: {cls.RIGHT_STRIP_LEDS} LEDs an GPIO {cls.RIGHT_STRIP_PIN}")
         print(f"💡 Helligkeit:    {cls.LED_BRIGHTNESS}/255")
@@ -363,6 +431,10 @@ class Config:
     def to_json(cls):
         """Gibt aktuelle Konfiguration als Dictionary für Templates zurück"""
         try:
+            # Stelle sicher, dass Netzwerk-Info aktuell ist
+            if cls.DEVICE_IP is None:
+                cls.update_network_info()
+            
             return {
                 "left_strip_leds": cls.LEFT_STRIP_LEDS,
                 "right_strip_leds": cls.RIGHT_STRIP_LEDS,
@@ -387,7 +459,10 @@ class Config:
                     "right_strip_pin": cls.RIGHT_STRIP_PIN,
                     "max_leds": max(cls.LEFT_STRIP_LEDS, cls.RIGHT_STRIP_LEDS),
                     "total_leds": cls.LEFT_STRIP_LEDS + cls.RIGHT_STRIP_LEDS
-                }
+                },
+                
+                # Netzwerk-Info
+                "network": cls.get_network_info()
             }
         except Exception as e:
             print(f"⚠️ Fehler bei to_json(): {e}")
@@ -397,13 +472,21 @@ class Config:
                 "visualization_mode": "audio",
                 "current_color": "#8000FF",
                 "current_color_name": "lila",
-                "led_brightness": 50
+                "led_brightness": 50,
+                "network": {
+                    "ip": "unbekannt",
+                    "hostname": "unbekannt",
+                    "web_url": "http://localhost:5000"
+                }
             }
 
 # ========================================
 # AUTOMATISCHES LADEN
 # ========================================
 Config.load_from_json()
+
+# Netzwerk-Info beim Start aktualisieren
+Config.update_network_info()
 
 # Validierung
 if Config.LEFT_STRIP_LEDS <= 0 or Config.RIGHT_STRIP_LEDS <= 0:
@@ -413,3 +496,4 @@ if Config.LEFT_STRIP_PIN == Config.RIGHT_STRIP_PIN:
     raise ValueError("Beide Strips können nicht den gleichen Pin verwenden!")
 
 print(f"🚀 Config geladen: {Config.LEFT_STRIP_LEDS}L + {Config.RIGHT_STRIP_LEDS}R LEDs, Farbe: {Config.get_current_color_name()}")
+print(f"🌐 Erreichbar unter: http://{Config.DEVICE_IP}:5000")
